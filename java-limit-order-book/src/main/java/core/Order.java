@@ -16,4 +16,26 @@ public final class Order {
     private long remainingQuantity;
 
     private final long timestamp;
+
+    public Order(long orderId, long symbolId, Side side, long price, long quantity,long timestamp){
+        this.orderId = orderId;
+        this.symbolId = symbolId;
+        this.side = side;
+        this.price = price;
+        this.quantity = quantity;
+        this.remainingQuantity = quantity;
+        this.timestamp = timestamp;
+    }
+
+    public long getQuantity() {
+        return quantity;
+    }
+
+    public long getRemainingQuantity() {
+        return remainingQuantity;
+    }
+
+    public void setRemainingQuantity(long remainingQuantity) {
+        this.remainingQuantity = remainingQuantity;
+    }
 }

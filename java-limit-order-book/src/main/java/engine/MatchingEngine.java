@@ -1,4 +1,9 @@
 package engine;
 
-public class MatchingEngine {
+public interface MatchingEngine {
+    void start();
+
+    void stop();
+
+    long lastProcessedSequence();
 }

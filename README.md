@@ -15,7 +15,7 @@ src/main/java/
         PriceLevel.java
     engine/
         MatchingEngine.java
-        Command.java
+        command.java
         Event.java
     concurrency/
         LockedOrderBook.java
@@ -25,8 +25,55 @@ src/main/java/
         WorkloadGenerator.java
         LatencyRecorder.java
         BenchmarkRunner.java
-tests/
-InvariantChecker.java
-RandomWorkload.java
+    tests/
+        InvariantChecker.java
+        RandomWorkload.java
+
+
+
+src/
+    main/
+        java/com/yourname/lob/
+            Application.java
+            config/
+                Config.java
+                Mode.java
+            core/
+                Order.java
+                OrderBook.java
+                PriceLevel.java
+                Side.java
+            engine/
+                MatchingEngine.java
+                SingleThreadedMatchingEngine.java
+                SingleWriterMatchingEngine.java
+            command/
+                Command.java
+                AddLimitOrderCommand.java
+                CancelOrderCommand.java
+                ModifyOrderCommand.java
+                MarketOrderCommand.java
+            event/
+                Event.java
+                OrderAccepted.java
+                OrderCancelled.java
+                Trade.java
+            workload/
+                WorkloadGenerator.java
+                RandomWorkloadGenerator.java
+            validation/
+                InvariantChecker.java
+                EventRecorder.java
+            benchmark/
+                BenchmarkRunner.java
+                LatencyRecorder.java
+test/
+java/
+com/
+yourname/
+lob/
+OrderBookTest.java
+MatchingEngineTest.java
+RandomWorkloadInvariantTest.java
 
 
