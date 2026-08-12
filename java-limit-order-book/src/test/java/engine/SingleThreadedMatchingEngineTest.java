@@ -1,12 +1,16 @@
 package engine;
 
 import command.AddLimitOrderCommand;
+import command.CancelOrderCommand;
 import command.Command;
+import core.Order;
 import core.OrderBook;
 import core.Side;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Date;
 
 public class SingleThreadedMatchingEngineTest {
     SingleThreadedMatchingEngine engine;
@@ -62,5 +66,28 @@ public class SingleThreadedMatchingEngineTest {
         long remainingQty = engine.addLimitOrder(orderCommand);
         Assert.assertEquals(remainingQty,10);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L),false);
+    }
+
+    @Test
+    public void cancelLimitOrderTest(){
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        CancelOrderCommand command = new CancelOrderCommand(engine.lastProcessedSequence(), 1L);
+        engine.cancelLimitOrder(command);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
+        Assert.assertEquals(orderBook.getAsks().size(),0);
+        Assert.assertEquals(orderBook.getOrdersById().containsKey(1L), false);
+        Assert.assertEquals(orderBook.getOrdersById().size(),0);
+    }
+
+    @Test
+    public void cancelLimitOrderTest2(){
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        orderBook.addOrder(new Order(2L, 1L,Side.SELL,1_00L,10,new Date().getTime()));
+        CancelOrderCommand command = new CancelOrderCommand(engine.lastProcessedSequence(), 1L);
+        engine.cancelLimitOrder(command);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), true);
+        Assert.assertEquals(orderBook.getAsks().size(),1);
+        Assert.assertEquals(orderBook.getOrdersById().containsKey(1L), false);
+        Assert.assertEquals(orderBook.getOrdersById().size(),1);
     }
 }

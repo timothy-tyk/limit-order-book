@@ -27,6 +27,9 @@ public class PriceLevel {
 
     public void addOrder(Order order){
         orders.add(order);
+        totalQuantity+=order.getQuantity();
+        orderCount+=1;
+
     }
 
     public long fulfilOrder(long requestQuantity){
@@ -53,5 +56,7 @@ public class PriceLevel {
 
     public void removeOrder(Order order){
         orders.remove(order);
+        orderCount--;
+        totalQuantity-=order.getQuantity();
     }
 }

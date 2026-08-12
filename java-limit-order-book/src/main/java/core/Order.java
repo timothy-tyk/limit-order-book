@@ -1,7 +1,7 @@
 package core;
 
 public final class Order {
-    public final long orderId;
+    private final long orderId;
 
     private final long symbolId;
 
@@ -27,6 +27,10 @@ public final class Order {
         this.timestamp = timestamp;
     }
 
+    public long getOrderId() {
+        return orderId;
+    }
+
     public long getQuantity() {
         return quantity;
     }
@@ -37,5 +41,13 @@ public final class Order {
 
     public void setRemainingQuantity(long remainingQuantity) {
         this.remainingQuantity = remainingQuantity;
+    }
+
+    public long getPrice() {
+        return price;
+    }
+
+    public Side getSide() {
+        return side;
     }
 }

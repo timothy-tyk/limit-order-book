@@ -31,6 +31,23 @@ public class OrderBook {
         this.asks = asks;
     }
 
+    public Map<Long, Order> getOrdersById() {
+        return ordersById;
+    }
+
+    public void addOrder(Order order){
+        PriceLevel priceLevel = null;
+        if(order.getSide().equals(Side.BUY)){
+            priceLevel = bids.get(order.getPrice());
+            priceLevel.addOrder(order);
+            ordersById.put(order.getOrderId(), order);
+        }else{
+            priceLevel = asks.get(order.getPrice());
+            priceLevel.addOrder(order);
+            ordersById.put(order.getOrderId(), order);
+        }
+    }
+
     public boolean validateOrderExists(long orderId){
         return ordersById.containsKey(orderId);
     }
@@ -47,6 +64,7 @@ public class OrderBook {
                 Order buyOrder = new Order(newBuyOrderId, symbolId,Side.BUY,buyPrice,buyQuantity,new Date().getTime());
                 PriceLevel priceLevel = bids.get(buyPrice);
                 priceLevel.addOrder(buyOrder);
+                ordersById.put(newBuyOrderId, buyOrder);
             }
         }else {
             //Cheapest SELLs get executed first
@@ -66,6 +84,7 @@ public class OrderBook {
                 long orderId = ordersById.size() + 1;
                 Order newBuyOrder = new Order(orderId, symbolId, Side.BUY, buyPrice, remainingRequestQty, new Date().getTime());
                 bids.get(buyPrice).addOrder(newBuyOrder);
+                ordersById.put(orderId, newBuyOrder);
             }
         }
         }
@@ -84,6 +103,7 @@ public class OrderBook {
                 Order newSellOrder = new Order(orderId,symbolId,Side.SELL,sellPrice,sellQuantity,new Date().getTime());
                 PriceLevel priceLevel = asks.get(sellPrice);
                 priceLevel.addOrder(newSellOrder);
+                ordersById.put(orderId, newSellOrder);
             }
         }else {
             //Highest BUYs get executed first
@@ -102,6 +122,7 @@ public class OrderBook {
                     long orderId = ordersById.size() + 1;
                     Order newSellOrder = new Order(orderId, symbolId, Side.SELL, sellPrice, remainingRequestQty, new Date().getTime());
                     asks.get(sellPrice).addOrder(newSellOrder);
+                    ordersById.put(orderId, newSellOrder);
                 }
             }
         }
@@ -113,8 +134,10 @@ public class OrderBook {
         long orderId = ordersById.size()+1;
         Order newOrder = new Order(orderId, symbolId,side, price, quantity, new Date().getTime());
         orders.add(newOrder);
+        ordersById.put(orderId, newOrder);
         return new PriceLevel(orders,quantity,1);
     }
+
 
     public void checkAndCleanupPriceLevel(long price, Side side) {
 //      Remove price level when qty = 0
@@ -129,6 +152,24 @@ public class OrderBook {
             if (priceLevel.getOrderCount() <= 0 && priceLevel.getTotalQuantity() <= 0 && priceLevel.getOrders().isEmpty()) {
                 asks.remove(price);
             }
+        }
+    }
+
+    public void cancelOrder(long orderId){
+        if(validateOrderExists(orderId)) {
+            Order orderToCancel = ordersById.get(orderId);
+            long orderPrice = orderToCancel.getPrice();
+            Side orderSide = orderToCancel.getSide();
+            if(orderSide.equals(Side.BUY)){
+                PriceLevel buyPriceLevel = bids.get(orderPrice);
+                buyPriceLevel.removeOrder(orderToCancel);
+                checkAndCleanupPriceLevel(orderPrice, orderSide);
+            }else{
+                PriceLevel sellPriceLevel = asks.get(orderPrice);
+                sellPriceLevel.removeOrder(orderToCancel);
+                checkAndCleanupPriceLevel(orderPrice, orderSide);
+            }
+            ordersById.remove(orderId);
         }
     }
 

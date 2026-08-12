@@ -81,7 +81,20 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     }
 
     void cancelLimitOrder(CancelOrderCommand cmd){
-
+        /**
+         * Given an order ID:
+         *
+         * 1. Look up the order in ordersById.
+         * 2. If it does not exist, ignore or reject.
+         * 3. If it exists:
+         *    - remove it from its price level queue
+         *    - if that price level becomes empty, remove the price level
+         *    - remove it from ordersById
+         */
+        long orderIdToCancel = cmd.getOrderId();
+        if(orderBook.validateOrderExists(orderIdToCancel)){
+            orderBook.cancelOrder(orderIdToCancel);
+        }
     }
     void modifyLimitOrder(ModifyOrderCommand cmd){}
     void marketLimitOrder(MarketOrderCommand cmd){}
