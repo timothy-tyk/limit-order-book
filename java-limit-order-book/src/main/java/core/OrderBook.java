@@ -173,4 +173,26 @@ public class OrderBook {
         }
     }
 
+    public void modifyOrder(long orderId, Side newSide, long newPrice, long newQuantity){
+        if(validateOrderExists(orderId)){
+            cancelOrder(orderId);
+            long newOrderId = ordersById.size()+1;
+            Order newOrderToAdd = new Order(newOrderId,symbolId,newSide,newPrice,newQuantity,new Date().getTime());
+            PriceLevel priceLevel;
+            if(newSide.equals(Side.BUY)){
+               if(bids.containsKey(newPrice)){
+                   addOrder(newOrderToAdd);
+               }else{
+                   bids.put(newPrice, createNewPriceLevel(newPrice, newQuantity, newSide));
+               }
+            }else{
+                if(asks.containsKey(newPrice)){
+                    addOrder(newOrderToAdd);
+                }else{
+                    asks.put(newPrice, createNewPriceLevel(newPrice, newQuantity, newSide));
+                }
+            }
+        }
+    }
+
 }

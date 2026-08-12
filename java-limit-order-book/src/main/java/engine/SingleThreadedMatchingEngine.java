@@ -1,6 +1,7 @@
 package engine;
 
 import command.*;
+import core.Order;
 import core.OrderBook;
 import core.Side;
 
@@ -96,6 +97,16 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
             orderBook.cancelOrder(orderIdToCancel);
         }
     }
-    void modifyLimitOrder(ModifyOrderCommand cmd){}
+    void modifyLimitOrder(ModifyOrderCommand cmd){
+        /**
+         * 1. Find existing order by ID.
+         * 2. Cancel/remove it.
+         * 3. Add a new order using the new price/quantity.
+         */
+        long orderIdToModify = cmd.getOrderId();
+        if(orderBook.validateOrderExists(orderIdToModify)){
+            orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity());
+        }
+    }
     void marketLimitOrder(MarketOrderCommand cmd){}
 }

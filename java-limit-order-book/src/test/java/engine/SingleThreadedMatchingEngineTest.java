@@ -2,7 +2,7 @@ package engine;
 
 import command.AddLimitOrderCommand;
 import command.CancelOrderCommand;
-import command.Command;
+import command.ModifyOrderCommand;
 import core.Order;
 import core.OrderBook;
 import core.Side;
@@ -89,5 +89,23 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(orderBook.getAsks().size(),1);
         Assert.assertEquals(orderBook.getOrdersById().containsKey(1L), false);
         Assert.assertEquals(orderBook.getOrdersById().size(),1);
+    }
+
+    @Test
+    public void modifyLimitOrderTest(){
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        ModifyOrderCommand command = new ModifyOrderCommand(engine.lastProcessedSequence(),1L,Side.SELL,2_00,20);
+        engine.modifyLimitOrder(command);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
+        Assert.assertEquals(orderBook.getAsks().containsKey(2_00L), true);
+    }
+
+    @Test
+    public void modifyLimitOrderTest2(){
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        ModifyOrderCommand command = new ModifyOrderCommand(engine.lastProcessedSequence(),1L,Side.BUY,2_00,20);
+        engine.modifyLimitOrder(command);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
+        Assert.assertEquals(orderBook.getBids().containsKey(2_00L), true);
     }
 }
