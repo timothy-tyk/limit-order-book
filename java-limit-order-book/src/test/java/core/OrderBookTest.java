@@ -26,8 +26,8 @@ public class OrderBookTest {
         Order order3 = new Order(3L,1L,Side.SELL,2_00,6, new Date().getTime());
         Order order4 = new Order(4L,1L,Side.SELL, 2_00,5,new Date().getTime());
         ArrayDeque<Order> sellDeque2L = new ArrayDeque<>();
-        sellDeque2L.add(order1);
-        sellDeque2L.add(order2);
+        sellDeque2L.add(order3);
+        sellDeque2L.add(order4);
         PriceLevel priceLevelSell2L = new PriceLevel(sellDeque2L,order3.getQuantity()+order4.getQuantity(),sellDeque2L.size());
         asks.put(1_00L, priceLevelSell1L);
         asks.put(2_00L, priceLevelSell2L);
@@ -62,6 +62,14 @@ public class OrderBookTest {
     }
 
     @Test
+    public void orderBookMatchBuyOrderOnAsks2(){
+//      Buy as much as possible, remaining buy qty add to PriceLevel
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(2_00, 20);
+        Assert.assertEquals(remainingRequestQty, 0);
+        Assert.assertEquals(orderBook.getBids().containsKey(1_50L), false);
+    }
+
+    @Test
     public void orderBookUnableToMatchBuyOrderOnAsks(){
 //        Cant buy, buyPrice too low
         long remainingRequestQty = orderBook.matchBuyOrderOnAsks(50, 20);
@@ -75,6 +83,15 @@ public class OrderBookTest {
         long remainingRequestQty = orderBook.matchSellOrderOnBids(1_50, 20);
         Assert.assertEquals(remainingRequestQty, 7);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_50L), true);
+    }
+
+    @Test
+    public void orderBookMatchSellOrderOnBids2(){
+//        Sell as much as possible, remaining sell qty add to PriceLevel
+        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_00, 20);
+        Assert.assertEquals(remainingRequestQty, 0);
+        Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
+        Assert.assertEquals(orderBook.getBids().get(1_00L).getTotalQuantity(), 8);
     }
 
     @Test

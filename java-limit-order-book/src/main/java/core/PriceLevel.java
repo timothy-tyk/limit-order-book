@@ -17,6 +17,14 @@ public class PriceLevel {
         return orders;
     }
 
+    public long getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public long getOrderCount() {
+        return orderCount;
+    }
+
     public void addOrder(Order order){
         orders.add(order);
     }
@@ -38,7 +46,12 @@ public class PriceLevel {
                 totalQuantity-=orderQty;
             }
             System.out.println("Remaining request qty ="+remainingRequestQty);
+
         }
         return remainingRequestQty;
+    }
+
+    public void removeOrder(Order order){
+        orders.remove(order);
     }
 }

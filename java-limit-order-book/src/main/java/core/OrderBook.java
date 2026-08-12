@@ -48,29 +48,33 @@ public class OrderBook {
                 PriceLevel priceLevel = bids.get(buyPrice);
                 priceLevel.addOrder(buyOrder);
             }
-        }else{
-         //Cheapest SELLs get executed first
-            PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
-            remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(buyQuantity);
-            // if there are remaining qty unfilled, move to resting order
-            if(remainingRequestQty>0){
-                if(bids.get(buyPrice)==null){
-                    PriceLevel newBuyPriceLevel = createNewPriceLevel(buyPrice,remainingRequestQty,Side.BUY);
-                    bids.put(buyPrice, newBuyPriceLevel);
-                }else {
-                    long orderId = ordersById.size() + 1;
-                    Order newBuyOrder = new Order(orderId, symbolId, Side.BUY, buyPrice, remainingRequestQty, new Date().getTime());
-                    asks.get(buyPrice).addOrder(newBuyOrder);
-                }
+        }else {
+            //Cheapest SELLs get executed first
+            while (remainingRequestQty > 0 && asks.size() > 0 && asks.firstKey() <= buyPrice) {
+                lowestAsk = asks.firstKey();
+                PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
+                remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty);
+                checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
+            }
+
+        // if there are remaining qty unfilled, move to resting order
+        if (remainingRequestQty > 0) {
+            if (bids.get(buyPrice) == null) {
+                PriceLevel newBuyPriceLevel = createNewPriceLevel(buyPrice, remainingRequestQty, Side.BUY);
+                bids.put(buyPrice, newBuyPriceLevel);
+            } else {
+                long orderId = ordersById.size() + 1;
+                Order newBuyOrder = new Order(orderId, symbolId, Side.BUY, buyPrice, remainingRequestQty, new Date().getTime());
+                bids.get(buyPrice).addOrder(newBuyOrder);
             }
         }
-
+        }
         return remainingRequestQty;
     }
 
     public long matchSellOrderOnBids(long sellPrice, long sellQuantity){
         long remainingRequestQty = sellQuantity;
-        long highestBid = asks.lastKey();
+        long highestBid = bids.lastKey();
         if(highestBid<sellPrice){
             if(asks.get(sellPrice)==null) {
                 PriceLevel newSellPriceLevel = createNewPriceLevel(sellPrice,sellQuantity,Side.SELL);
@@ -81,16 +85,20 @@ public class OrderBook {
                 PriceLevel priceLevel = asks.get(sellPrice);
                 priceLevel.addOrder(newSellOrder);
             }
-        }else{
+        }else {
             //Highest BUYs get executed first
-            PriceLevel highestBuyPriceLevel = bids.get(highestBid);
-            remainingRequestQty = highestBuyPriceLevel.fulfilOrder(sellQuantity);
-            // if there are remaining qty unfilled, move to resting order
-            if(remainingRequestQty>0){
-                if(asks.get(sellPrice)==null){
-                    PriceLevel newSellPriceLevel = createNewPriceLevel(sellPrice,remainingRequestQty,Side.SELL);
-                    asks.put(sellPrice,newSellPriceLevel);
-                }else {
+            while (remainingRequestQty > 0 && bids.size()>0 && bids.lastKey() >= sellPrice) {
+                highestBid = bids.lastKey();
+                PriceLevel highestBuyPriceLevel = bids.get(highestBid);
+                remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty);
+                checkAndCleanupPriceLevel(highestBid, Side.BUY);
+                // if there are remaining qty unfilled, move to resting order
+            }
+            if (remainingRequestQty > 0) {
+                if (asks.get(sellPrice) == null) {
+                    PriceLevel newSellPriceLevel = createNewPriceLevel(sellPrice, remainingRequestQty, Side.SELL);
+                    asks.put(sellPrice, newSellPriceLevel);
+                } else {
                     long orderId = ordersById.size() + 1;
                     Order newSellOrder = new Order(orderId, symbolId, Side.SELL, sellPrice, remainingRequestQty, new Date().getTime());
                     asks.get(sellPrice).addOrder(newSellOrder);
@@ -107,4 +115,21 @@ public class OrderBook {
         orders.add(newOrder);
         return new PriceLevel(orders,quantity,1);
     }
+
+    public void checkAndCleanupPriceLevel(long price, Side side) {
+//      Remove price level when qty = 0
+        PriceLevel priceLevel;
+        if (side.equals(Side.BUY)) {
+            priceLevel = bids.get(price);
+            if (priceLevel.getOrderCount() <= 0 && priceLevel.getTotalQuantity() <= 0 && priceLevel.getOrders().isEmpty()) {
+                bids.remove(price);
+            }
+        } else {
+            priceLevel = asks.get(price);
+            if (priceLevel.getOrderCount() <= 0 && priceLevel.getTotalQuantity() <= 0 && priceLevel.getOrders().isEmpty()) {
+                asks.remove(price);
+            }
+        }
+    }
+
 }

@@ -8,6 +8,14 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     private long lastProcessedSequence = 0;
     private OrderBook orderBook;
 
+    public SingleThreadedMatchingEngine() {
+        this.orderBook = new OrderBook();
+    }
+
+    public OrderBook getOrderBook() {
+        return orderBook;
+    }
+
     @Override
     public void start() {
 //        Do nothing for single threaded engine
@@ -35,7 +43,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         lastProcessedSequence = command.sequence();
     }
 
-    void addLimitOrder(AddLimitOrderCommand cmd){
+    public long addLimitOrder(AddLimitOrderCommand cmd){
         /**
          * Given a new limit order:
          *
@@ -61,16 +69,20 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 3. If quantity remains after matching:
          *        rest the order on the appropriate side.
          */
+        long remainingRequestQty=cmd.quantity;
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.orderId)){
             if(cmd.side.equals(Side.BUY)){
-                orderBook.matchBuyOrderOnAsks(cmd.price, cmd.quantity);
+                remainingRequestQty = orderBook.matchBuyOrderOnAsks(cmd.price, cmd.quantity);
             }else{
-                orderBook.matchSellOrderOnBids(cmd.price, cmd.quantity);
+                remainingRequestQty = orderBook.matchSellOrderOnBids(cmd.price, cmd.quantity);
             }
         }
+        return remainingRequestQty;
     }
 
-    void cancelLimitOrder(CancelOrderCommand cmd){}
+    void cancelLimitOrder(CancelOrderCommand cmd){
+
+    }
     void modifyLimitOrder(ModifyOrderCommand cmd){}
     void marketLimitOrder(MarketOrderCommand cmd){}
 }
