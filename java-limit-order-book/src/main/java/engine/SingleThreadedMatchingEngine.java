@@ -63,7 +63,9 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          */
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.orderId)){
             if(cmd.side.equals(Side.BUY)){
-//                orderBook.matchBuyOrderOnAsks();
+                orderBook.matchBuyOrderOnAsks(cmd.price, cmd.quantity);
+            }else{
+                orderBook.matchSellOrderOnBids(cmd.price, cmd.quantity);
             }
         }
     }

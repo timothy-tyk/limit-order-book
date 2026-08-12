@@ -21,29 +21,66 @@ public class OrderBookTest {
         ArrayDeque<Order> sellDeque1L = new ArrayDeque<>();
         sellDeque1L.add(order1);
         sellDeque1L.add(order2);
-        PriceLevel priceLevel1L = new PriceLevel(sellDeque1L,order1.getQuantity()+order2.getQuantity(),sellDeque1L.size());
+        PriceLevel priceLevelSell1L = new PriceLevel(sellDeque1L,order1.getQuantity()+order2.getQuantity(),sellDeque1L.size());
 
         Order order3 = new Order(3L,1L,Side.SELL,2_00,6, new Date().getTime());
         Order order4 = new Order(4L,1L,Side.SELL, 2_00,5,new Date().getTime());
         ArrayDeque<Order> sellDeque2L = new ArrayDeque<>();
         sellDeque2L.add(order1);
         sellDeque2L.add(order2);
-        PriceLevel priceLevel2L = new PriceLevel(sellDeque2L,order3.getQuantity()+order4.getQuantity(),sellDeque2L.size());
-        asks.put(1_00L, priceLevel1L);
-        asks.put(2_00L, priceLevel2L);
+        PriceLevel priceLevelSell2L = new PriceLevel(sellDeque2L,order3.getQuantity()+order4.getQuantity(),sellDeque2L.size());
+        asks.put(1_00L, priceLevelSell1L);
+        asks.put(2_00L, priceLevelSell2L);
         orderBook.setAsks(asks);
+
+        TreeMap<Long, PriceLevel> bids = new TreeMap<>();
+
+        Order order5 = new Order(5L,1L,Side.BUY,1_00,10, new Date().getTime());
+        Order order6 = new Order(6L,1L,Side.BUY, 1_00,5,new Date().getTime());
+        ArrayDeque<Order> buyDeque1L = new ArrayDeque<>();
+        buyDeque1L.add(order5);
+        buyDeque1L.add(order6);
+        PriceLevel priceLevelBuy1L = new PriceLevel(buyDeque1L,order5.getQuantity()+order6.getQuantity(),buyDeque1L.size());
+
+        Order order7 = new Order(7L,1L,Side.BUY,2_00,8, new Date().getTime());
+        Order order8 = new Order(8L,1L,Side.BUY, 2_00,5,new Date().getTime());
+        ArrayDeque<Order> buyDeque2L = new ArrayDeque<>();
+        buyDeque2L.add(order7);
+        buyDeque2L.add(order8);
+        PriceLevel priceLevelBuy2L = new PriceLevel(buyDeque2L,order7.getQuantity()+order8.getQuantity(),buyDeque2L.size());
+        bids.put(1_00L, priceLevelBuy1L);
+        bids.put(2_00L, priceLevelBuy2L);
+        orderBook.setBids(bids);
     }
 
     @Test
     public void orderBookMatchBuyOrderOnAsks(){
-        long priceMatched = orderBook.matchBuyOrderOnAsks(1_50, 20);
-        Assert.assertEquals(priceMatched, 5);
+//      Buy as much as possible, remaining buy qty add to PriceLevel
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(1_50, 20);
+        Assert.assertEquals(remainingRequestQty, 5);
+        Assert.assertEquals(orderBook.getBids().containsKey(1_50L), true);
     }
 
     @Test
     public void orderBookUnableToMatchBuyOrderOnAsks(){
-        long priceMatched = orderBook.matchBuyOrderOnAsks(50, 20);
-        Assert.assertEquals(orderBook.getBids().size(),1);
-        Assert.assertEquals(priceMatched, 20);
+//        Cant buy, buyPrice too low
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(50, 20);
+        Assert.assertEquals(orderBook.getBids().containsKey(50L),true);
+        Assert.assertEquals(remainingRequestQty, 20);
+    }
+
+    @Test
+    public void orderBookMatchSellOrderOnBids(){
+//        Sell as much as possible, remaining sell qty add to PriceLevel
+        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_50, 20);
+        Assert.assertEquals(remainingRequestQty, 7);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_50L), true);
+    }
+
+    @Test
+    public void orderBookUnableToMatchSellOrderOnBids(){
+        long remainingRequestQty = orderBook.matchSellOrderOnBids(500, 20);
+        Assert.assertEquals(orderBook.getAsks().containsKey(500L),true);
+        Assert.assertEquals(remainingRequestQty, 20);
     }
 }
