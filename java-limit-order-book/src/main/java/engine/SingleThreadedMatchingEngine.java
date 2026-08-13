@@ -73,9 +73,9 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         long remainingRequestQty=cmd.getQuantity();
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.getOrderId())){
             if(cmd.getSide().equals(Side.BUY)){
-                remainingRequestQty = orderBook.matchBuyOrderOnAsks(cmd.getPrice(), cmd.getQuantity());
+                remainingRequestQty = orderBook.matchBuyOrderOnAsks(cmd.getPrice(), cmd.getQuantity(), cmd.getOrderId());
             }else{
-                remainingRequestQty = orderBook.matchSellOrderOnBids(cmd.getPrice(), cmd.getQuantity());
+                remainingRequestQty = orderBook.matchSellOrderOnBids(cmd.getPrice(), cmd.getQuantity(),cmd.getOrderId());
             }
         }
         return remainingRequestQty;
@@ -105,7 +105,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          */
         long orderIdToModify = cmd.getOrderId();
         if(orderBook.validateOrderExists(orderIdToModify)){
-            orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity());
+            orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity(), cmd.getOrderId());
         }
     }
     public long marketLimitOrder(MarketOrderCommand cmd){

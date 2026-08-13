@@ -26,8 +26,8 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void addLimitOrderTestFullyBuy(){
-        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY));
-        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.BUY));
+        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY, 1));
+        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.BUY, 2));
         long seq = engine.lastProcessedSequence();
         AddLimitOrderCommand orderCommand = new AddLimitOrderCommand(seq, seq,Side.SELL,1_50L,10);
         long remainingQty = engine.addLimitOrder(orderCommand);
@@ -38,8 +38,8 @@ public class SingleThreadedMatchingEngineTest {
     @Test
     public void addLimitOrderTestPartiallyBuy(){
 //        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY));
-        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.BUY));
-        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(1_50, 10, Side.BUY));
+        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.BUY, 1));
+        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(1_50, 10, Side.BUY, 2));
         long seq = engine.lastProcessedSequence();
         AddLimitOrderCommand orderCommand = new AddLimitOrderCommand(seq, seq,Side.SELL,1_50L,20);
         long remainingQty = engine.addLimitOrder(orderCommand);
@@ -50,8 +50,8 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void addLimitOrderTestFullySell(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.SELL));
-        orderBook.getAsks().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.SELL, 1));
+        orderBook.getAsks().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.SELL, 2));
         long seq = engine.lastProcessedSequence();
         AddLimitOrderCommand orderCommand = new AddLimitOrderCommand(seq, seq,Side.BUY,1_50L,10);
         long remainingQty = engine.addLimitOrder(orderCommand);
@@ -61,8 +61,8 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void addLimitOrderTestPartiallySell(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
-        orderBook.getAsks().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL, 1));
+        orderBook.getAsks().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.SELL, 2));
         long seq = engine.lastProcessedSequence();
         AddLimitOrderCommand orderCommand = new AddLimitOrderCommand(seq, seq,Side.BUY,1_50L,20);
         long remainingQty = engine.addLimitOrder(orderCommand);
@@ -72,7 +72,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void cancelLimitOrderTest(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL,1));
         CancelOrderCommand command = new CancelOrderCommand(engine.lastProcessedSequence(), 1L);
         engine.cancelLimitOrder(command);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
@@ -83,7 +83,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void cancelLimitOrderTest2(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL,1));
         orderBook.addOrder(new Order(2L, 1L,Side.SELL,1_00L,10,new Date().getTime()));
         CancelOrderCommand command = new CancelOrderCommand(engine.lastProcessedSequence(), 1L);
         engine.cancelLimitOrder(command);
@@ -95,7 +95,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void modifyLimitOrderTest(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL,1));
         ModifyOrderCommand command = new ModifyOrderCommand(engine.lastProcessedSequence(),1L,Side.SELL,2_00,20);
         engine.modifyLimitOrder(command);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
@@ -104,7 +104,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void modifyLimitOrderTest2(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 10, Side.SELL,1));
         ModifyOrderCommand command = new ModifyOrderCommand(engine.lastProcessedSequence(),1L,Side.BUY,2_00,20);
         engine.modifyLimitOrder(command);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
@@ -113,7 +113,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void marketLimitOrderBuyTest(){
-        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.SELL));
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.SELL,1));
         MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.BUY,25);
         long remainingQty = engine.marketLimitOrder(command);
         Assert.assertEquals(remainingQty,5);
@@ -130,7 +130,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Test
     public void marketLimitOrderSellTest(){
-        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY));
+        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY,1));
         MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.SELL,25);
         long remainingQty = engine.marketLimitOrder(command);
         Assert.assertEquals(remainingQty,5);
@@ -159,7 +159,7 @@ public class SingleThreadedMatchingEngineTest {
             - totalQty = 49
             - 1 orders
                 - remaining qty = 49
-                - orderId = 2
+                - orderId = 3 (since it is the 3rd command sent)
 
          */
         long price = 99997L;
@@ -177,7 +177,7 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(engine.getOrderBook().getAsks().containsKey(price),true);
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getTotalQuantity(),49);
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrderCount(),1);
-        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrders().getFirst().getOrderId(),2);
+        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrders().getFirst().getOrderId(),3);
 
 
 

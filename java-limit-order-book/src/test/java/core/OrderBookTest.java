@@ -56,7 +56,7 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchBuyOrderOnAsks(){
 //      Buy as much as possible, remaining buy qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(1_50, 20);
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(1_50, 20,orderBook.getOrdersById().size()+1);
         Assert.assertEquals(remainingRequestQty, 5);
         Assert.assertEquals(orderBook.getBids().containsKey(1_50L), true);
     }
@@ -64,7 +64,7 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchBuyOrderOnAsks2(){
 //      Buy as much as possible, remaining buy qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(2_00, 20);
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(2_00, 20, orderBook.getOrdersById().size()+1);
         Assert.assertEquals(remainingRequestQty, 0);
         Assert.assertEquals(orderBook.getBids().containsKey(1_50L), false);
     }
@@ -72,7 +72,7 @@ public class OrderBookTest {
     @Test
     public void orderBookUnableToMatchBuyOrderOnAsks(){
 //        Cant buy, buyPrice too low
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(50, 20);
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(50, 20, orderBook.getOrdersById().size()+1);
         Assert.assertEquals(orderBook.getBids().containsKey(50L),true);
         Assert.assertEquals(remainingRequestQty, 20);
     }
@@ -80,7 +80,7 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchSellOrderOnBids(){
 //        Sell as much as possible, remaining sell qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_50, 20);
+        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_50, 20, orderBook.getOrdersById().size()+1);
         Assert.assertEquals(remainingRequestQty, 7);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_50L), true);
     }
@@ -88,7 +88,7 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchSellOrderOnBids2(){
 //        Sell as much as possible, remaining sell qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_00, 20);
+        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_00, 20, orderBook.getOrdersById().size()+1);
         Assert.assertEquals(remainingRequestQty, 0);
         Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
         Assert.assertEquals(orderBook.getBids().get(1_00L).getTotalQuantity(), 8);
@@ -96,7 +96,7 @@ public class OrderBookTest {
 
     @Test
     public void orderBookUnableToMatchSellOrderOnBids(){
-        long remainingRequestQty = orderBook.matchSellOrderOnBids(500, 20);
+        long remainingRequestQty = orderBook.matchSellOrderOnBids(500, 20, orderBook.getOrdersById().size()+1);
         Assert.assertEquals(orderBook.getAsks().containsKey(500L),true);
         Assert.assertEquals(remainingRequestQty, 20);
     }
