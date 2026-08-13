@@ -70,12 +70,12 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 3. If quantity remains after matching:
          *        rest the order on the appropriate side.
          */
-        long remainingRequestQty=cmd.quantity;
-        if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.orderId)){
-            if(cmd.side.equals(Side.BUY)){
-                remainingRequestQty = orderBook.matchBuyOrderOnAsks(cmd.price, cmd.quantity);
+        long remainingRequestQty=cmd.getQuantity();
+        if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.getOrderId())){
+            if(cmd.getSide().equals(Side.BUY)){
+                remainingRequestQty = orderBook.matchBuyOrderOnAsks(cmd.getPrice(), cmd.getQuantity());
             }else{
-                remainingRequestQty = orderBook.matchSellOrderOnBids(cmd.price, cmd.quantity);
+                remainingRequestQty = orderBook.matchSellOrderOnBids(cmd.getPrice(), cmd.getQuantity());
             }
         }
         return remainingRequestQty;
@@ -108,5 +108,26 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
             orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity());
         }
     }
-    void marketLimitOrder(MarketOrderCommand cmd){}
+    public long marketLimitOrder(MarketOrderCommand cmd){
+        /**
+         * Given a market order:
+         *
+         * 1. Match immediately against the opposite side.
+         * 2. Continue until:
+         *    - quantity is filled, or
+         *    - there is no more opposite liquidity.
+         * 3. Do not rest the remaining quantity on the book.
+         * 4. If unfilled quantity remains, reject/cancel it.
+         */
+        long remainingQuantity = cmd.getQuantity();
+        if(cmd.validateCommand()){
+            if(cmd.getSide().equals(Side.BUY)){
+                remainingQuantity = orderBook.matchBuyOrderOnAsksMarket(cmd.getQuantity());
+            }else{
+                remainingQuantity = orderBook.matchSellOrderOnBidsMarket(cmd.getQuantity());
+            }
+        }
+        return remainingQuantity;
+
+    }
 }

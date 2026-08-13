@@ -4,10 +4,10 @@ import core.Side;
 
 public class AddLimitOrderCommand implements Command{
     long sequence;
-    public long orderId;
-    public Side side;
-    public long price;
-    public long quantity;
+    private long orderId;
+    private Side side;
+    private long price;
+    private long quantity;
 
     public AddLimitOrderCommand(long sequence, long orderId, Side side, long price, long quantity) {
         this.sequence = sequence;
@@ -24,5 +24,21 @@ public class AddLimitOrderCommand implements Command{
 
     public boolean validateCommand(){
         return price>0 && quantity>0;
+    }
+
+    public long getOrderId() {
+        return orderId;
+    }
+
+    public Side getSide() {
+        return side;
+    }
+
+    public long getPrice() {
+        return price;
+    }
+
+    public long getQuantity() {
+        return quantity;
     }
 }

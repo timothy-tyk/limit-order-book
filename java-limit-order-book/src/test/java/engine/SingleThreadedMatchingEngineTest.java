@@ -2,6 +2,7 @@ package engine;
 
 import command.AddLimitOrderCommand;
 import command.CancelOrderCommand;
+import command.MarketOrderCommand;
 import command.ModifyOrderCommand;
 import core.Order;
 import core.OrderBook;
@@ -10,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.beans.PropertyEditorManager;
 import java.util.Date;
 
 public class SingleThreadedMatchingEngineTest {
@@ -107,5 +109,39 @@ public class SingleThreadedMatchingEngineTest {
         engine.modifyLimitOrder(command);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
         Assert.assertEquals(orderBook.getBids().containsKey(2_00L), true);
+    }
+
+    @Test
+    public void marketLimitOrderBuyTest(){
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.SELL));
+        MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.BUY,25);
+        long remainingQty = engine.marketLimitOrder(command);
+        Assert.assertEquals(remainingQty,5);
+        Assert.assertEquals(orderBook.getAsks().isEmpty(), true);
+    }
+
+    @Test
+    public void marketLimitOrderBuyTest2(){
+        MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.BUY,25);
+        long remainingQty = engine.marketLimitOrder(command);
+        Assert.assertEquals(remainingQty, 25);
+        Assert.assertEquals(orderBook.getBids().isEmpty(), true);
+    }
+
+    @Test
+    public void marketLimitOrderSellTest(){
+        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY));
+        MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.SELL,25);
+        long remainingQty = engine.marketLimitOrder(command);
+        Assert.assertEquals(remainingQty,5);
+        Assert.assertEquals(orderBook.getBids().isEmpty(), true);
+    }
+
+    @Test
+    public void marketLimitOrderSellTest2(){
+        MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.SELL,25);
+        long remainingQty = engine.marketLimitOrder(command);
+        Assert.assertEquals(remainingQty, 25);
+        Assert.assertEquals(orderBook.getAsks().isEmpty(), true);
     }
 }

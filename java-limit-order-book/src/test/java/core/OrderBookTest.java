@@ -35,14 +35,14 @@ public class OrderBookTest {
 
         TreeMap<Long, PriceLevel> bids = new TreeMap<>();
 
-        Order order5 = new Order(5L,1L,Side.BUY,1_00,10, new Date().getTime());
+        Order order5 = new Order(5L,1L,Side.BUY,1_00,10,new Date().getTime());
         Order order6 = new Order(6L,1L,Side.BUY, 1_00,5,new Date().getTime());
         ArrayDeque<Order> buyDeque1L = new ArrayDeque<>();
         buyDeque1L.add(order5);
         buyDeque1L.add(order6);
         PriceLevel priceLevelBuy1L = new PriceLevel(buyDeque1L,order5.getQuantity()+order6.getQuantity(),buyDeque1L.size());
 
-        Order order7 = new Order(7L,1L,Side.BUY,2_00,8, new Date().getTime());
+        Order order7 = new Order(7L,1L,Side.BUY,2_00,8,new Date().getTime());
         Order order8 = new Order(8L,1L,Side.BUY, 2_00,5,new Date().getTime());
         ArrayDeque<Order> buyDeque2L = new ArrayDeque<>();
         buyDeque2L.add(order7);
@@ -100,4 +100,40 @@ public class OrderBookTest {
         Assert.assertEquals(orderBook.getAsks().containsKey(500L),true);
         Assert.assertEquals(remainingRequestQty, 20);
     }
+
+    @Test
+    public void orderBookMatchBuyOrderOnAsksMarket(){
+//      Buy as much as possible, disregard remaining unfilled qty
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsksMarket(20);
+        Assert.assertEquals(remainingRequestQty, 0);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
+        Assert.assertEquals(orderBook.getAsks().get(2_00L).getTotalQuantity(), 6);
+    }
+
+    @Test
+    public void orderBookMatchBuyOrderOnAsksMarket2(){
+//      Buy as much as possible, disregard remaining unfilled qty
+        long remainingRequestQty = orderBook.matchBuyOrderOnAsksMarket(8);
+        Assert.assertEquals(remainingRequestQty, 0);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), true);
+        Assert.assertEquals(orderBook.getAsks().get(1_00L).getTotalQuantity(), 7);
+    }
+
+    @Test
+    public void orderBookMatchSellOrderOnBidsMarket(){
+//      Sell as much as possible, disregard remaining unfilled qty
+        long remainingRequestQty = orderBook.matchSellOrderOnBidsMarket(20);
+        Assert.assertEquals(remainingRequestQty, 0);
+        Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
+    }
+
+    @Test
+    public void orderBookMatchSellOrderOnBidsMarket2(){
+//      Sell as much as possible, disregard remaining unfilled qty
+        long remainingRequestQty = orderBook.matchSellOrderOnBidsMarket(50);
+        Assert.assertEquals(remainingRequestQty, 22);
+        Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
+        Assert.assertEquals(orderBook.getBids().containsKey(1_00L), false);
+    }
+
 }
