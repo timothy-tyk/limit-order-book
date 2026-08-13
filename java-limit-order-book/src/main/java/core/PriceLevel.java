@@ -1,6 +1,7 @@
 package core;
 
 import java.util.ArrayDeque;
+import java.util.Map;
 
 public class PriceLevel {
     private ArrayDeque<Order> orders;
@@ -25,6 +26,28 @@ public class PriceLevel {
         return orderCount;
     }
 
+    public long fulfilOrder(long requestQuantity, Map<Long, Order> ordersById){
+        long remainingRequestQty = requestQuantity;
+//        BUY fully
+        while(orders.peek()!=null && remainingRequestQty>0 && totalQuantity>0){
+            Order order = orders.getFirst();
+            long orderQty = order.getRemainingQuantity();
+            if(orderQty>remainingRequestQty){
+                order.setRemainingQuantity(orderQty-remainingRequestQty);
+                totalQuantity-=remainingRequestQty;
+                remainingRequestQty = 0;
+            }else{
+                long orderIdToRemove = orders.getFirst().getOrderId();
+                orders.removeFirst();
+                ordersById.remove(orderIdToRemove);
+                orderCount--;
+                remainingRequestQty-=orderQty;
+                totalQuantity-=orderQty;
+            }
+        }
+        return remainingRequestQty;
+    }
+
     public void addOrder(Order order){
         orders.add(order);
         totalQuantity+=order.getQuantity();
@@ -32,33 +55,9 @@ public class PriceLevel {
 
     }
 
-    public long fulfilOrder(long requestQuantity){
-        long remainingRequestQty = requestQuantity;
-//        BUY fully
-        while(orders.peek()!=null && remainingRequestQty>0 && totalQuantity>0){
-            Order order = orders.getFirst();
-            long orderQty = order.getRemainingQuantity();
-            if(orderQty>remainingRequestQty){
-//                System.out.println("Before qty: "+orderQty);
-                order.setRemainingQuantity(orderQty-remainingRequestQty);
-//                System.out.println("After qty: "+order.getRemainingQuantity());
-                totalQuantity-=remainingRequestQty;
-                remainingRequestQty = 0;
-//                System.out.println("TotalQuantity="+totalQuantity);
-            }else{
-                orders.removeFirst();
-                orderCount--;
-                remainingRequestQty-=orderQty;
-                totalQuantity-=orderQty;
-            }
-//            System.out.println("Remaining request qty ="+remainingRequestQty);
-        }
-        return remainingRequestQty;
-    }
-
     public void removeOrder(Order order){
         orders.remove(order);
         orderCount--;
-        totalQuantity-=order.getQuantity();
+        totalQuantity-=order.getRemainingQuantity();
     }
 }

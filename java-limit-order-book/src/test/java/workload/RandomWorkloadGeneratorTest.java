@@ -15,7 +15,7 @@ public class RandomWorkloadGeneratorTest {
 
     @Test
     public void generateTest(){
-        long liveSize = randomWorkloadGenerator.generate(50);
+        long liveSize = randomWorkloadGenerator.generate(100000);
         Assert.assertEquals(liveSize>0,true);
     }
 }

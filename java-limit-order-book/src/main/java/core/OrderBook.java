@@ -68,12 +68,11 @@ public class OrderBook {
                 lowestAsk = asks.firstKey();
                 PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
                 long orderIdToMatch = lowestSellingPriceLevel.getOrders().peekFirst().getOrderId();
-                remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty);
-                if(remainingRequestQty>0){
-                    //order fully filled, remove order from ordersById
-                    System.out.println("removing order");
-                    ordersById.remove(orderIdToMatch);
-                }
+                remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
+//                if(remainingRequestQty>0) {
+//                    //order fully filled, remove orders from ordersById
+//                    ordersById.remove(orderIdToMatch);
+//                }
                 checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
             }
             // if there are remaining qty unfilled, move to resting order
@@ -101,12 +100,11 @@ public class OrderBook {
                 highestBid = bids.lastKey();
                 PriceLevel highestBuyPriceLevel = bids.get(highestBid);
                 long orderIdToMatch = highestBuyPriceLevel.getOrders().peekFirst().getOrderId();
-                remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty);
-                if(remainingRequestQty>0){
-                    //order fully filled, remove order from ordersById
-                    System.out.println("removing order");
-                    ordersById.remove(orderIdToMatch);
-                }
+                remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
+//                if(remainingRequestQty>0){
+//                    //order fully filled, remove order from ordersById
+//                    ordersById.remove(orderIdToMatch);
+//                }
                 checkAndCleanupPriceLevel(highestBid, Side.BUY);
                 // if there are remaining qty unfilled, move to resting order
             }
@@ -146,11 +144,15 @@ public class OrderBook {
             long lowestAsk = asks.firstKey();
             PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
             long orderIdToMatch = lowestSellingPriceLevel.getOrders().peekFirst().getOrderId();
-            remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty);
+            remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
             if(remainingRequestQty>0){
-                //ask fully filled, remove order from ordersById
-                System.out.println("removing order");
-                ordersById.remove(orderIdToMatch);
+                //ask fully filled, remove orders from ordersById
+                for(Order order: lowestSellingPriceLevel.getOrders()){
+                    if(order.getRemainingQuantity()==0){
+                        ordersById.remove(order.getOrderId());
+                    }
+                }
+//                ordersById.remove(orderIdToMatch);
             }
             checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
         }
@@ -165,7 +167,7 @@ public class OrderBook {
             long highestBid = bids.lastKey();
             PriceLevel highestBuyPriceLevel = bids.get(highestBid);
             long orderIdToMatch = highestBuyPriceLevel.getOrders().peekFirst().getOrderId();
-            remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty);
+            remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
             if(remainingRequestQty>0){
                 //bid fully filled, remove order from ordersById
                 ordersById.remove(orderIdToMatch);

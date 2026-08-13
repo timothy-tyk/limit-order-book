@@ -33,17 +33,14 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
             Command command;
 
             int action = random.nextInt(100);
+
             if(action<70 || liveOrderIds.isEmpty()){
-                System.out.println("AddLimitOrderCommand - "+sequence);
+                System.out.println("AddLimitOrderCommand - "+sequence+" "+nextOrderId);
 //              Add Limit Order (70%)
                 Side side = random.nextBoolean()?Side.BUY:Side.SELL;
                 long priceOffset = random.nextInt(20)-10;
                 long price = basePrice+priceOffset;
                 long qty = random.nextInt(100)+1;
-                if(price == 99997L){
-                    System.out.println(String.format("%s - %s - %s", side, price, qty));
-                }
-
                 command = new AddLimitOrderCommand(
                         sequence,
                         nextOrderId,
@@ -54,12 +51,12 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                 liveOrderIds.addLast(nextOrderId);
                 nextOrderId++;
             }else if(action<90){
-                System.out.println("CancelOrderCommand - "+sequence);
+                System.out.println("CancelOrderCommand - "+sequence+" "+nextOrderId);
 //              Cancel Limit Order (20%)
                 long orderIdToRemove = removeLiveOrderId(random, liveOrderIds);
                 command = new CancelOrderCommand(sequence, orderIdToRemove);
             }else{
-                System.out.println("ModifyOrderCommand - "+sequence);
+                System.out.println("ModifyOrderCommand - "+sequence+" "+nextOrderId);
 //              Modify Limit Order (10%)
                 long orderIdToRemove = removeLiveOrderId(random, liveOrderIds);
                 Side newSide = random.nextBoolean()?Side.BUY:Side.SELL;
