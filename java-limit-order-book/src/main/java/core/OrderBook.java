@@ -53,6 +53,10 @@ public class OrderBook {
     }
 
     public long matchBuyOrderOnAsks(long buyPrice, long buyQuantity){
+        if(asks.size()<=0) {
+            restUnfilledOrderQuantities(buyPrice, buyQuantity, Side.BUY);
+            return buyQuantity;
+        }
         long remainingRequestQty = buyQuantity;
         long lowestAsk = asks.firstKey();
         if(lowestAsk>buyPrice){
@@ -63,7 +67,13 @@ public class OrderBook {
             while (remainingRequestQty > 0 && asks.size() > 0 && asks.firstKey() <= buyPrice) {
                 lowestAsk = asks.firstKey();
                 PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
+                long orderIdToMatch = lowestSellingPriceLevel.getOrders().peekFirst().getOrderId();
                 remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty);
+                if(remainingRequestQty>0){
+                    //order fully filled, remove order from ordersById
+                    System.out.println("removing order");
+                    ordersById.remove(orderIdToMatch);
+                }
                 checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
             }
             // if there are remaining qty unfilled, move to resting order
@@ -76,6 +86,10 @@ public class OrderBook {
 
 
     public long matchSellOrderOnBids(long sellPrice, long sellQuantity){
+        if(bids.size()<=0) {
+            restUnfilledOrderQuantities(sellPrice, sellQuantity, Side.SELL);
+            return sellQuantity;
+        }
         long remainingRequestQty = sellQuantity;
         long highestBid = bids.lastKey();
         if(highestBid<sellPrice){
@@ -86,7 +100,13 @@ public class OrderBook {
             while (remainingRequestQty > 0 && bids.size()>0 && bids.lastKey() >= sellPrice) {
                 highestBid = bids.lastKey();
                 PriceLevel highestBuyPriceLevel = bids.get(highestBid);
+                long orderIdToMatch = highestBuyPriceLevel.getOrders().peekFirst().getOrderId();
                 remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty);
+                if(remainingRequestQty>0){
+                    //order fully filled, remove order from ordersById
+                    System.out.println("removing order");
+                    ordersById.remove(orderIdToMatch);
+                }
                 checkAndCleanupPriceLevel(highestBid, Side.BUY);
                 // if there are remaining qty unfilled, move to resting order
             }
@@ -127,7 +147,13 @@ public class OrderBook {
         while (remainingRequestQty > 0 && asks.size() > 0) {
             long lowestAsk = asks.firstKey();
             PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
+            long orderIdToMatch = lowestSellingPriceLevel.getOrders().peekFirst().getOrderId();
             remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty);
+            if(remainingRequestQty>0){
+                //ask fully filled, remove order from ordersById
+                System.out.println("removing order");
+                ordersById.remove(orderIdToMatch);
+            }
             checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
         }
         // if there are remaining qty unfilled, disregard them
@@ -140,7 +166,12 @@ public class OrderBook {
         while (remainingRequestQty > 0 && bids.size()>0) {
             long highestBid = bids.lastKey();
             PriceLevel highestBuyPriceLevel = bids.get(highestBid);
+            long orderIdToMatch = highestBuyPriceLevel.getOrders().peekFirst().getOrderId();
             remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty);
+            if(remainingRequestQty>0){
+                //bid fully filled, remove order from ordersById
+                ordersById.remove(orderIdToMatch);
+            }
             checkAndCleanupPriceLevel(highestBid, Side.BUY);
         }
         // if there are remaining qty unfilled, move to resting order

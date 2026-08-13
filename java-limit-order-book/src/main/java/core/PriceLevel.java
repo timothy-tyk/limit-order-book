@@ -37,19 +37,21 @@ public class PriceLevel {
 //        BUY fully
         while(orders.peek()!=null && remainingRequestQty>0 && totalQuantity>0){
             Order order = orders.getFirst();
-            long orderQty = order.getQuantity();
+            long orderQty = order.getRemainingQuantity();
             if(orderQty>remainingRequestQty){
+//                System.out.println("Before qty: "+orderQty);
                 order.setRemainingQuantity(orderQty-remainingRequestQty);
+//                System.out.println("After qty: "+order.getRemainingQuantity());
                 totalQuantity-=remainingRequestQty;
                 remainingRequestQty = 0;
+//                System.out.println("TotalQuantity="+totalQuantity);
             }else{
                 orders.removeFirst();
                 orderCount--;
                 remainingRequestQty-=orderQty;
                 totalQuantity-=orderQty;
             }
-            System.out.println("Remaining request qty ="+remainingRequestQty);
-
+//            System.out.println("Remaining request qty ="+remainingRequestQty);
         }
         return remainingRequestQty;
     }

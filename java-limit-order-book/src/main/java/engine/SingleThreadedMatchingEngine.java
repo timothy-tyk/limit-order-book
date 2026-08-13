@@ -1,7 +1,6 @@
 package engine;
 
 import command.*;
-import core.Order;
 import core.OrderBook;
 import core.Side;
 
@@ -32,6 +31,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         return lastProcessedSequence;
     }
 
+    @Override
     public void submitCommand(Command command){
         // TODO: switch case for each command type
         switch(command){

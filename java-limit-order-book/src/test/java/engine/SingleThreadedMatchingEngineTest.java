@@ -144,4 +144,42 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(remainingQty, 25);
         Assert.assertEquals(orderBook.getAsks().isEmpty(), true);
     }
+
+
+    @Test
+    public void sanityTest(){
+        /*
+        SELL - 99997 - 93
+        BUY: 99998 12
+        SELL - 99997 - 58
+        BUY: 100007 50
+        BUY: 100005 40
+
+        result should return
+            - totalQty = 49
+            - 1 orders
+                - remaining qty = 49
+                - orderId = 2
+
+         */
+        long price = 99997L;
+
+        AddLimitOrderCommand com1 = new AddLimitOrderCommand(1,1,Side.SELL,price,93);
+        AddLimitOrderCommand com2 = new AddLimitOrderCommand(2,2,Side.BUY,price,12);
+        AddLimitOrderCommand com3 = new AddLimitOrderCommand(3,3,Side.SELL,price,58);
+        AddLimitOrderCommand com4 = new AddLimitOrderCommand(4,4,Side.BUY,price,50);
+        AddLimitOrderCommand com5 = new AddLimitOrderCommand(5,5,Side.BUY,price,40);
+        engine.submitCommand(com1);
+        engine.submitCommand(com2);
+        engine.submitCommand(com3);
+        engine.submitCommand(com4);
+        engine.submitCommand(com5);
+        Assert.assertEquals(engine.getOrderBook().getAsks().containsKey(price),true);
+        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getTotalQuantity(),49);
+        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrderCount(),1);
+        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrders().getFirst().getOrderId(),2);
+
+
+
+    }
 }
