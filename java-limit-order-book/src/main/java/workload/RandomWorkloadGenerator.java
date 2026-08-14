@@ -35,7 +35,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
             int action = random.nextInt(100);
 
             if(action<70 || liveOrderIds.isEmpty()){
-                System.out.println("AddLimitOrderCommand - "+sequence+" "+nextOrderId);
+//                System.out.println("AddLimitOrderCommand - "+sequence+" "+nextOrderId);
 //              Add Limit Order (70%)
                 Side side = random.nextBoolean()?Side.BUY:Side.SELL;
                 long priceOffset = random.nextInt(20)-10;
@@ -51,12 +51,12 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                 liveOrderIds.addLast(nextOrderId);
                 nextOrderId++;
             }else if(action<90){
-                System.out.println("CancelOrderCommand - "+sequence+" "+nextOrderId);
+//                System.out.println("CancelOrderCommand - "+sequence+" "+nextOrderId);
 //              Cancel Limit Order (20%)
                 long orderIdToRemove = removeLiveOrderId(random, liveOrderIds);
                 command = new CancelOrderCommand(sequence, orderIdToRemove);
             }else{
-                System.out.println("ModifyOrderCommand - "+sequence+" "+nextOrderId);
+//                System.out.println("ModifyOrderCommand - "+sequence+" "+nextOrderId);
 //              Modify Limit Order (10%)
                 long orderIdToRemove = removeLiveOrderId(random, liveOrderIds);
                 Side newSide = random.nextBoolean()?Side.BUY:Side.SELL;
@@ -74,7 +74,12 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
     }
 
     private long removeLiveOrderId(Random random, Deque<Long> liveOrderIds){
-        long index = random.nextInt(liveOrderIds.size()-1);
+        long index = random.nextInt(liveOrderIds.size()+1);
+        if(index==0){
+            return liveOrderIds.removeFirst();
+        }else if(index==liveOrderIds.size()+1){
+            return liveOrderIds.removeLast();
+        }else{
         long current = 0;
         for(Long orderId:liveOrderIds){
             if(current == index){
@@ -84,5 +89,11 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
             current++;
         }
         return liveOrderIds.removeFirst();
+        }
+    }
+
+    @Override
+    public long getLastProcessedSequence(){
+        return engine.lastProcessedSequence();
     }
 }

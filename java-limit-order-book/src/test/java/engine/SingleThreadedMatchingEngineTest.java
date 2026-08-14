@@ -165,10 +165,10 @@ public class SingleThreadedMatchingEngineTest {
         long price = 99997L;
 
         AddLimitOrderCommand com1 = new AddLimitOrderCommand(1,1,Side.SELL,price,93);
-        AddLimitOrderCommand com2 = new AddLimitOrderCommand(2,2,Side.BUY,price,12);
+        AddLimitOrderCommand com2 = new AddLimitOrderCommand(2,2,Side.BUY,99998L,12);
         AddLimitOrderCommand com3 = new AddLimitOrderCommand(3,3,Side.SELL,price,58);
-        AddLimitOrderCommand com4 = new AddLimitOrderCommand(4,4,Side.BUY,price,50);
-        AddLimitOrderCommand com5 = new AddLimitOrderCommand(5,5,Side.BUY,price,40);
+        AddLimitOrderCommand com4 = new AddLimitOrderCommand(4,4,Side.BUY,100007L,50);
+        AddLimitOrderCommand com5 = new AddLimitOrderCommand(5,5,Side.BUY,100005L,40);
         engine.submitCommand(com1);
         engine.submitCommand(com2);
         engine.submitCommand(com3);
@@ -178,6 +178,45 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getTotalQuantity(),49);
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrderCount(),1);
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrders().getFirst().getOrderId(),3);
+    }
+
+    @Test
+    public void sanityTest2(){
+        /*
+        SELL - 99997 - 93
+        BUY: 99998 12
+        SELL - 99997 - 58
+        CANCEL - 99997 - id=1
+        BUY: 100007 50
+        BUY: 100005 40
+
+        result should return
+            - Asks@99997L totalQty = 0, no orders, no pricelevel exists
+            - Bids@100005L totalQty = 32
+            - 1 orders
+                - remaining qty = 32
+                - orderId = 5 (since it is the 3rd command sent)
+
+         */
+        long price = 99997L;
+
+        AddLimitOrderCommand com1 = new AddLimitOrderCommand(1,1,Side.SELL,price,93);
+        AddLimitOrderCommand com2 = new AddLimitOrderCommand(2,2,Side.BUY,99998L,12);
+        AddLimitOrderCommand com3 = new AddLimitOrderCommand(3,3,Side.SELL,price,58);
+        CancelOrderCommand com4 = new CancelOrderCommand(4,1);
+        AddLimitOrderCommand com5 = new AddLimitOrderCommand(5,4,Side.BUY,100007L,50);
+        AddLimitOrderCommand com6 = new AddLimitOrderCommand(6,5,Side.BUY,100005L,40);
+        engine.submitCommand(com1);
+        engine.submitCommand(com2);
+        engine.submitCommand(com3);
+        engine.submitCommand(com4);
+        engine.submitCommand(com5);
+        engine.submitCommand(com6);
+        Assert.assertEquals(engine.getOrderBook().getAsks().containsKey(price),false);
+        Assert.assertEquals(engine.getOrderBook().getBids().containsKey(100005L),true);
+        Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrderCount(),1);
+        Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getTotalQuantity(),32);
+        Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrders().getFirst().getOrderId(),5);
 
 
 
