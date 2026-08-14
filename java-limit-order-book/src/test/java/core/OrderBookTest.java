@@ -1,11 +1,13 @@
 package core;
 
+import event.TradeDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.Queue;
 import java.util.TreeMap;
 
 public class OrderBookTest {
@@ -56,8 +58,8 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchBuyOrderOnAsks(){
 //      Buy as much as possible, remaining buy qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(1_50, 20,orderBook.getOrdersById().size()+1);
-        Assert.assertEquals(remainingRequestQty, 5);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsks(1_50, 20,orderBook.getOrdersById().size()+1,1,1);
+        Assert.assertEquals(tradeDTOs.size(), 2);
         Assert.assertEquals(orderBook.getBids().containsKey(1_50L), true);
     }
 

@@ -74,7 +74,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
     }
 
     private long removeLiveOrderId(Random random, Deque<Long> liveOrderIds){
-        long index = random.nextInt(liveOrderIds.size()+1);
+        long index = random.nextInt(liveOrderIds.size());
         if(index==0){
             return liveOrderIds.removeFirst();
         }else if(index==liveOrderIds.size()+1){

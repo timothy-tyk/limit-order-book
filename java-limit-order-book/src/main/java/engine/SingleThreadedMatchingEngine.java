@@ -3,13 +3,20 @@ package engine;
 import command.*;
 import core.OrderBook;
 import core.Side;
+import event.*;
+
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 public class SingleThreadedMatchingEngine implements MatchingEngine {
     private long lastProcessedSequence = 0;
     private OrderBook orderBook;
+    private final EventListener eventListener;
+    private long nextEventSequence = 1;
 
-    public SingleThreadedMatchingEngine() {
+    public SingleThreadedMatchingEngine(EventListener eventListener) {
         this.orderBook = new OrderBook();
+        this.eventListener = eventListener;
     }
 
     public OrderBook getOrderBook() {
@@ -44,7 +51,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         lastProcessedSequence = command.sequence();
     }
 
-    public long addLimitOrder(AddLimitOrderCommand cmd){
+    public void addLimitOrder(AddLimitOrderCommand cmd){
         /**
          * Given a new limit order:
          *
@@ -72,13 +79,19 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          */
         long remainingRequestQty=cmd.getQuantity();
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.getOrderId())){
+            emitOrderAccepted(cmd.sequence(),cmd.getOrderId(), cmd.getSide(),cmd.getPrice(),cmd.getQuantity());
+            Queue<TradeDTO> tradeDTOs;
             if(cmd.getSide().equals(Side.BUY)){
-                remainingRequestQty = orderBook.matchBuyOrderOnAsks(cmd.getPrice(), cmd.getQuantity(), cmd.getOrderId());
+                tradeDTOs = orderBook.matchBuyOrderOnAsks(cmd.getPrice(), cmd.getQuantity(), cmd.getOrderId());
             }else{
-                remainingRequestQty = orderBook.matchSellOrderOnBids(cmd.getPrice(), cmd.getQuantity(),cmd.getOrderId());
+                tradeDTOs = orderBook.matchSellOrderOnBids(cmd.getPrice(), cmd.getQuantity(),cmd.getOrderId());
             }
+            for(TradeDTO tradeDTO: tradeDTOs){
+                emitTradeEvent(nextEventSequence++,cmd.sequence(), tradeDTO.getBuyOrderId(), tradeDTO.getSellOrderId(), tradeDTO.getPrice(), tradeDTO.getQuantity());
+            }
+        }else{
+            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
-        return remainingRequestQty;
     }
 
     void cancelLimitOrder(CancelOrderCommand cmd){
@@ -94,7 +107,10 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          */
         long orderIdToCancel = cmd.getOrderId();
         if(orderBook.validateOrderExists(orderIdToCancel)){
+            emitOrderCancelled(cmd.sequence(),orderIdToCancel);
             orderBook.cancelOrder(orderIdToCancel);
+        }else{
+            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
     }
     void modifyLimitOrder(ModifyOrderCommand cmd){
@@ -105,10 +121,14 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          */
         long orderIdToModify = cmd.getOrderId();
         if(orderBook.validateOrderExists(orderIdToModify)){
+
+            emitOrderModified(cmd.sequence(),orderIdToModify,cmd.getSide(),cmd.getNewPrice(),cmd.getNewQuantity());
             orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity(), cmd.getOrderId());
+        }else{
+            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
     }
-    public long marketLimitOrder(MarketOrderCommand cmd){
+    public void marketLimitOrder(MarketOrderCommand cmd){
         /**
          * Given a market order:
          *
@@ -119,15 +139,53 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 3. Do not rest the remaining quantity on the book.
          * 4. If unfilled quantity remains, reject/cancel it.
          */
-        long remainingQuantity = cmd.getQuantity();
         if(cmd.validateCommand()){
+            Queue<TradeDTO> tradeDTOs;
             if(cmd.getSide().equals(Side.BUY)){
-                remainingQuantity = orderBook.matchBuyOrderOnAsksMarket(cmd.getQuantity());
+                tradeDTOs = orderBook.matchBuyOrderOnAsksMarket(cmd.getQuantity(), cmd.getOrderId());
             }else{
-                remainingQuantity = orderBook.matchSellOrderOnBidsMarket(cmd.getQuantity());
+                tradeDTOs = orderBook.matchSellOrderOnBidsMarket(cmd.getQuantity(), cmd.getOrderId());
             }
+            for(TradeDTO tradeDTO:tradeDTOs){
+                emitTradeEvent(nextEventSequence++,cmd.sequence(), tradeDTO.getBuyOrderId(), tradeDTO.getSellOrderId(), tradeDTO.getPrice(), tradeDTO.getQuantity());
+            }
+        }else{
+            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
-        return remainingQuantity;
 
+    }
+
+    void emitOrderAccepted(long commandSequence, long orderId, Side side ,long price, long quantity){
+        OrderAccepted orderAccepted = new OrderAccepted(nextEventSequence++,commandSequence,orderId,side,price,quantity);
+        eventListener.onEvent(orderAccepted);
+    }
+
+    void emitOrderModified(long commandSequence, long orderId, Side newSide ,long newPrice, long newQuantity){
+        OrderModified orderModified = new OrderModified(nextEventSequence++,commandSequence,orderId,newSide,newPrice,newQuantity);
+        eventListener.onEvent(orderModified);
+    }
+
+    void emitOrderCancelled(long commandSequence, long orderId){
+        OrderCancelled orderCancelled = new OrderCancelled(nextEventSequence++,commandSequence, orderId);
+        eventListener.onEvent(orderCancelled);
+    }
+
+    void emitOrderRejected(long commandSequence, long orderId){
+        OrderRejected orderRejected = new OrderRejected(nextEventSequence++,commandSequence, orderId);
+        eventListener.onEvent(orderRejected);
+    }
+
+    void emitMarketOrderAccepted(long commandSequence, long orderId, Side side , long quantity){
+        MarketOrderAccepted marketOrderAccepted = new MarketOrderAccepted(nextEventSequence++,commandSequence,orderId,side,quantity);
+        eventListener.onEvent(marketOrderAccepted);
+    }
+    void emitMarketOrderRejected(long commandSequence, long orderId){
+        MarketOrderRejected marketOrderRejected = new MarketOrderRejected(nextEventSequence++,commandSequence,orderId);
+        eventListener.onEvent(marketOrderRejected);
+    }
+
+    void emitTradeEvent(long nextEventSequence, long commandSequence, long buyOrderId, long sellOrderId, long price, long quantity){
+        Trade tradeEvent = new Trade(nextEventSequence,commandSequence,buyOrderId,sellOrderId,price,quantity);
+        eventListener.onEvent(tradeEvent);
     }
 }

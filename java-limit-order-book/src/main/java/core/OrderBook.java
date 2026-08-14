@@ -1,5 +1,10 @@
 package core;
 
+import event.EventListener;
+import event.MarketOrderAccepted;
+import event.Trade;
+import event.TradeDTO;
+
 import java.util.*;
 
 public class OrderBook {
@@ -38,7 +43,7 @@ public class OrderBook {
     public void addOrder(Order order){
         PriceLevel priceLevel = null;
         if(order.getSide().equals(Side.BUY)){
-            priceLevel = bids.get(order.getPrice());
+            priceLevel = bids.get(order.getPrice())!=null? bids.get(order.getPrice()):createNewPriceLevel(order.getPrice(), order.getQuantity(), order.getSide(),order.getOrderId());
             priceLevel.addOrder(order);
             ordersById.put(order.getOrderId(), order);
         }else{
@@ -52,10 +57,11 @@ public class OrderBook {
         return ordersById.containsKey(orderId);
     }
 
-    public long matchBuyOrderOnAsks(long buyPrice, long buyQuantity, long orderId){
+    public Queue<TradeDTO> matchBuyOrderOnAsks(long buyPrice, long buyQuantity, long orderId){
+        Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         if(asks.size()<=0) {
             restUnfilledOrderQuantities(buyPrice, buyQuantity, Side.BUY, orderId);
-            return buyQuantity;
+            return tradeDTOs;
         }
         long remainingRequestQty = buyQuantity;
         long lowestAsk = asks.firstKey();
@@ -64,10 +70,10 @@ public class OrderBook {
             restUnfilledOrderQuantities(buyPrice, buyQuantity, Side.BUY, orderId);
         }else {
             //Cheapest SELLs get executed first
-            while (remainingRequestQty > 0 && asks.size() > 0 && asks.firstKey() <= buyPrice) {
+            while (!asks.isEmpty() && asks.firstKey() <= buyPrice) {
                 lowestAsk = asks.firstKey();
                 PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
-                remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
+                tradeDTOs.addAll(lowestSellingPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById));
                 checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
             }
             // if there are remaining qty unfilled, move to resting order
@@ -75,14 +81,15 @@ public class OrderBook {
                 restUnfilledOrderQuantities(buyPrice, remainingRequestQty, Side.BUY, orderId);
             }
         }
-        return remainingRequestQty;
+        return tradeDTOs;
     }
 
 
-    public long matchSellOrderOnBids(long sellPrice, long sellQuantity, long orderId){
+    public Queue<TradeDTO> matchSellOrderOnBids(long sellPrice, long sellQuantity, long orderId){
+        Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         if(bids.size()<=0) {
             restUnfilledOrderQuantities(sellPrice, sellQuantity, Side.SELL, orderId);
-            return sellQuantity;
+            return tradeDTOs;
         }
         long remainingRequestQty = sellQuantity;
         long highestBid = bids.lastKey();
@@ -91,10 +98,10 @@ public class OrderBook {
             restUnfilledOrderQuantities(sellPrice, sellQuantity, Side.SELL, orderId);
         }else {
             //Highest BUYs get executed first
-            while (remainingRequestQty > 0 && bids.size()>0 && bids.lastKey() >= sellPrice) {
+            while (!bids.isEmpty() && bids.lastKey() >= sellPrice) {
                 highestBid = bids.lastKey();
                 PriceLevel highestBuyPriceLevel = bids.get(highestBid);
-                remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
+                tradeDTOs.addAll(highestBuyPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById));
                 checkAndCleanupPriceLevel(highestBid, Side.BUY);
             }
             // if there are remaining qty unfilled, move to resting order
@@ -102,7 +109,7 @@ public class OrderBook {
                 restUnfilledOrderQuantities(sellPrice,remainingRequestQty,Side.SELL, orderId);
             }
         }
-        return remainingRequestQty;
+        return tradeDTOs;
     }
 
     public void restUnfilledOrderQuantities(long price, long quantity, Side side, long orderId){
@@ -127,45 +134,32 @@ public class OrderBook {
         }
     }
 
-    public long matchBuyOrderOnAsksMarket(long buyQuantity){
+    public Queue<TradeDTO> matchBuyOrderOnAsksMarket(long buyQuantity, long orderId){
+        Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         long remainingRequestQty = buyQuantity;
         //Cheapest SELLs get executed first
-        while (remainingRequestQty > 0 && asks.size() > 0) {
+        while (!asks.isEmpty()) {
             long lowestAsk = asks.firstKey();
             PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
-            long orderIdToMatch = lowestSellingPriceLevel.getOrders().peekFirst().getOrderId();
-            remainingRequestQty = lowestSellingPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
-            if(remainingRequestQty>0){
-                //ask fully filled, remove orders from ordersById
-                for(Order order: lowestSellingPriceLevel.getOrders()){
-                    if(order.getRemainingQuantity()==0){
-                        ordersById.remove(order.getOrderId());
-                    }
-                }
-//                ordersById.remove(orderIdToMatch);
-            }
+            tradeDTOs.addAll(lowestSellingPriceLevel.fulfilOrder(orderId,remainingRequestQty, ordersById));
             checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
         }
         // if there are remaining qty unfilled, disregard them
-        return remainingRequestQty;
+        return tradeDTOs;
     }
 
-    public long matchSellOrderOnBidsMarket(long sellQuantity){
+    public Queue<TradeDTO> matchSellOrderOnBidsMarket(long sellQuantity, long orderId){
+        Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         long remainingRequestQty = sellQuantity;
         //Highest BUYs get executed first
-        while (remainingRequestQty > 0 && bids.size()>0) {
+        while (!bids.isEmpty()) {
             long highestBid = bids.lastKey();
             PriceLevel highestBuyPriceLevel = bids.get(highestBid);
-            long orderIdToMatch = highestBuyPriceLevel.getOrders().peekFirst().getOrderId();
-            remainingRequestQty = highestBuyPriceLevel.fulfilOrder(remainingRequestQty, ordersById);
-            if(remainingRequestQty>0){
-                //bid fully filled, remove order from ordersById
-                ordersById.remove(orderIdToMatch);
-            }
+            tradeDTOs.addAll(highestBuyPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById));
             checkAndCleanupPriceLevel(highestBid, Side.BUY);
         }
-        // if there are remaining qty unfilled, move to resting order
-        return remainingRequestQty;
+        // if there are remaining qty unfilled, disregard them
+        return tradeDTOs;
     }
 
     public PriceLevel createNewPriceLevel(long price, long quantity, Side side, long orderId){
@@ -211,25 +205,19 @@ public class OrderBook {
         }
     }
 
-    public void modifyOrder(long orderId, Side newSide, long newPrice, long newQuantity, long newOrderId){
+    public Queue<TradeDTO> modifyOrder(long orderId, Side newSide, long newPrice, long newQuantity, long newOrderId){
+        Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         if(validateOrderExists(orderId)){
             cancelOrder(orderId);
-            Order newOrderToAdd = new Order(newOrderId,symbolId,newSide,newPrice,newQuantity,new Date().getTime());
-            PriceLevel priceLevel;
             if(newSide.equals(Side.BUY)){
-               if(bids.containsKey(newPrice)){
-                   addOrder(newOrderToAdd);
-               }else{
-                   bids.put(newPrice, createNewPriceLevel(newPrice, newQuantity, newSide, newOrderId));
-               }
+                tradeDTOs = matchBuyOrderOnAsks(newPrice,newQuantity,newOrderId);
             }else{
-                if(asks.containsKey(newPrice)){
-                    addOrder(newOrderToAdd);
-                }else{
-                    asks.put(newPrice, createNewPriceLevel(newPrice, newQuantity, newSide, newOrderId));
-                }
+                tradeDTOs = matchSellOrderOnBids(newPrice,newQuantity, newOrderId);
             }
         }
+        return tradeDTOs;
     }
+
+
 
 }

@@ -2,15 +2,19 @@ package event;
 
 import core.Side;
 
-public final class OrderCancelled implements Event{
+public final class MarketOrderAccepted implements Event{
     long eventSequence;
     long commandSequence;
     long orderId;
+    Side side;
+    long quantity;
 
-    public OrderCancelled(long eventSequence, long commandSequence, long orderId) {
+    public MarketOrderAccepted(long eventSequence, long commandSequence, long orderId, Side side, long quantity) {
         this.eventSequence = eventSequence;
         this.commandSequence = commandSequence;
         this.orderId = orderId;
+        this.side = side;
+        this.quantity = quantity;
     }
 
     @Override

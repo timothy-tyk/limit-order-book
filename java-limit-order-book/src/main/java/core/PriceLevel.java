@@ -1,7 +1,8 @@
 package core;
 
-import java.util.ArrayDeque;
-import java.util.Map;
+import event.TradeDTO;
+
+import java.util.*;
 
 public class PriceLevel {
     private ArrayDeque<Order> orders;
@@ -26,7 +27,8 @@ public class PriceLevel {
         return orderCount;
     }
 
-    public long fulfilOrder(long requestQuantity, Map<Long, Order> ordersById){
+    public Queue<TradeDTO> fulfilOrder(long requestOrderId, long requestQuantity, Map<Long, Order> ordersById){
+        Queue<TradeDTO> tradeEvents = new ArrayDeque<>();
         long remainingRequestQty = requestQuantity;
 //        BUY fully
         while(orders.peek()!=null && remainingRequestQty>0 && totalQuantity>0){
@@ -35,6 +37,8 @@ public class PriceLevel {
             if(orderQty>remainingRequestQty){
                 order.setRemainingQuantity(orderQty-remainingRequestQty);
                 totalQuantity-=remainingRequestQty;
+                TradeDTO tradeEvent = createTradeEvent(requestOrderId,order.getSide(),order.getOrderId(),order.getPrice(),remainingRequestQty);
+                tradeEvents.add(tradeEvent);
                 remainingRequestQty = 0;
             }else{
                 long orderIdToRemove = orders.getFirst().getOrderId();
@@ -43,9 +47,11 @@ public class PriceLevel {
                 orderCount--;
                 remainingRequestQty-=orderQty;
                 totalQuantity-=orderQty;
+                TradeDTO tradeEvent = createTradeEvent(requestOrderId,order.getSide(),order.getOrderId(),order.getPrice(),order.getRemainingQuantity());
+                tradeEvents.add(tradeEvent);
             }
         }
-        return remainingRequestQty;
+        return tradeEvents;
     }
 
     public void addOrder(Order order){
@@ -59,5 +65,13 @@ public class PriceLevel {
         orders.remove(order);
         orderCount--;
         totalQuantity-=order.getRemainingQuantity();
+    }
+
+    public TradeDTO createTradeEvent(long requestOrderId, Side priceLevelSide,long priceLevelOrderId, long price, long quantity){
+        if(priceLevelSide.equals(Side.BUY)){
+            return new TradeDTO(priceLevelOrderId,requestOrderId,price, quantity);
+        }else{
+            return new TradeDTO(requestOrderId,priceLevelOrderId,price,quantity);
+        }
     }
 }

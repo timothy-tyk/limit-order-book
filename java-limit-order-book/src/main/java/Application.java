@@ -1,3 +1,5 @@
+import event.EventListener;
+import validation.EventRecorder;
 import workload.RandomWorkloadGenerator;
 import workload.WorkloadGenerator;
 import engine.MatchingEngine;
@@ -8,7 +10,11 @@ public class Application {
         int commandCount = 1_000_000;
         long seed = 42;
 
-        MatchingEngine engine = new SingleThreadedMatchingEngine();
+        final boolean DONT_RETAIN_EVENTS = false;
+        final boolean RETAIN_EVENTS = true;
+        EventListener eventListener = new EventRecorder(DONT_RETAIN_EVENTS);
+
+        MatchingEngine engine = new SingleThreadedMatchingEngine(eventListener);
 //        EventRecorder recorder = new EventRecorder();
 //        engine.setEventListener(recorder);
 

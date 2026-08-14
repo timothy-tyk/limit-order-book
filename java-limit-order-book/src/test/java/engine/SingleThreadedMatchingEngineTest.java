@@ -10,9 +10,11 @@ import core.Side;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import validation.EventRecorder;
 
 import java.beans.PropertyEditorManager;
 import java.util.Date;
+import java.util.EventListener;
 
 public class SingleThreadedMatchingEngineTest {
     SingleThreadedMatchingEngine engine;
@@ -20,7 +22,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Before
     public void setup(){
-        engine = new SingleThreadedMatchingEngine();
+        engine = new SingleThreadedMatchingEngine(new EventRecorder(true));
         orderBook = engine.getOrderBook();
     }
 
@@ -30,8 +32,8 @@ public class SingleThreadedMatchingEngineTest {
         orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.BUY, 2));
         long seq = engine.lastProcessedSequence();
         AddLimitOrderCommand orderCommand = new AddLimitOrderCommand(seq, seq,Side.SELL,1_50L,10);
-        long remainingQty = engine.addLimitOrder(orderCommand);
-        Assert.assertEquals(remainingQty,0);
+        engine.addLimitOrder(orderCommand);
+//        Assert.assertEquals(remainingQty,0);
         Assert.assertEquals(orderBook.getBids().containsKey(2_00L),false);
     }
 
