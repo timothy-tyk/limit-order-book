@@ -1,13 +1,11 @@
 package core;
 
+import event.TradeDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayDeque;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PriceLevelTest {
     ArrayDeque<Order> orderDeque;
@@ -29,9 +27,11 @@ public class PriceLevelTest {
 
         PriceLevel priceLevel = new PriceLevel(orderDeque, order1.getQuantity()+order2.getQuantity(),orderDeque.size());
 
-        long requestQtyRemaining = priceLevel.fulfilOrder(15, ordersById);
-
-        Assert.assertEquals(requestQtyRemaining,0);
+        Queue<TradeDTO> tradeDTOs = priceLevel.fulfilOrder(3,15, ordersById);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(),2);
         Assert.assertEquals(orderDeque.size(),0);
     }
 
@@ -45,9 +45,11 @@ public class PriceLevelTest {
         ordersById.put(2L, order1);
         PriceLevel priceLevel = new PriceLevel(orderDeque, order1.getQuantity()+order2.getQuantity(), orderDeque.size());
 
-        long requestQtyRemaining = priceLevel.fulfilOrder(15, ordersById);
-
-        Assert.assertEquals(requestQtyRemaining,0);
+        Queue<TradeDTO> tradeDTOs = priceLevel.fulfilOrder(3,15, ordersById);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(),2);
         Assert.assertEquals(orderDeque.size(),1);
         Assert.assertEquals(orderDeque.getFirst().getRemainingQuantity(),3);
 
@@ -63,9 +65,11 @@ public class PriceLevelTest {
         ordersById.put(2L, order1);
         PriceLevel priceLevel = new PriceLevel(orderDeque, order1.getQuantity()+ order2.getQuantity(), orderDeque.size());
 
-        long requestQtyRemaining = priceLevel.fulfilOrder(20, ordersById);
-
-        Assert.assertEquals(requestQtyRemaining,5);
+        Queue<TradeDTO> tradeDTOs = priceLevel.fulfilOrder(3,20, ordersById);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(),2);
         Assert.assertEquals(orderDeque.size(),0);
     }
 
@@ -73,9 +77,11 @@ public class PriceLevelTest {
     public void buyNotFulfilledAtAll(){
         PriceLevel priceLevel = new PriceLevel(orderDeque, 0, orderDeque.size());
 
-        long requestQtyRemaining = priceLevel.fulfilOrder(20, ordersById);
-
-        Assert.assertEquals(requestQtyRemaining,20);
+        Queue<TradeDTO> tradeDTOs = priceLevel.fulfilOrder(3,20, ordersById);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(),0);
         Assert.assertEquals(orderDeque.size(),0);
     }
 }

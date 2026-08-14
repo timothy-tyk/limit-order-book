@@ -58,7 +58,10 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchBuyOrderOnAsks(){
 //      Buy as much as possible, remaining buy qty add to PriceLevel
-        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsks(1_50, 20,orderBook.getOrdersById().size()+1,1,1);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsks(1_50, 20,9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
         Assert.assertEquals(tradeDTOs.size(), 2);
         Assert.assertEquals(orderBook.getBids().containsKey(1_50L), true);
     }
@@ -66,48 +69,67 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchBuyOrderOnAsks2(){
 //      Buy as much as possible, remaining buy qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(2_00, 20, orderBook.getOrdersById().size()+1);
-        Assert.assertEquals(remainingRequestQty, 0);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsks(2_00, 20, 9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 3);
         Assert.assertEquals(orderBook.getBids().containsKey(1_50L), false);
     }
 
     @Test
     public void orderBookUnableToMatchBuyOrderOnAsks(){
 //        Cant buy, buyPrice too low
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsks(50, 20, orderBook.getOrdersById().size()+1);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsks(50, 20, 9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
         Assert.assertEquals(orderBook.getBids().containsKey(50L),true);
-        Assert.assertEquals(remainingRequestQty, 20);
+        Assert.assertEquals(tradeDTOs.size(), 0);
     }
 
     @Test
     public void orderBookMatchSellOrderOnBids(){
 //        Sell as much as possible, remaining sell qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_50, 20, orderBook.getOrdersById().size()+1);
-        Assert.assertEquals(remainingRequestQty, 7);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchSellOrderOnBids(1_50, 20, 9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 2);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_50L), true);
     }
 
     @Test
     public void orderBookMatchSellOrderOnBids2(){
 //        Sell as much as possible, remaining sell qty add to PriceLevel
-        long remainingRequestQty = orderBook.matchSellOrderOnBids(1_00, 20, orderBook.getOrdersById().size()+1);
-        Assert.assertEquals(remainingRequestQty, 0);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchSellOrderOnBids(1_00, 20, 9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 3);
         Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
         Assert.assertEquals(orderBook.getBids().get(1_00L).getTotalQuantity(), 8);
     }
 
     @Test
     public void orderBookUnableToMatchSellOrderOnBids(){
-        long remainingRequestQty = orderBook.matchSellOrderOnBids(500, 20, orderBook.getOrdersById().size()+1);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchSellOrderOnBids(500, 20, 9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
         Assert.assertEquals(orderBook.getAsks().containsKey(500L),true);
-        Assert.assertEquals(remainingRequestQty, 20);
+        Assert.assertEquals(orderBook.getAsks().get(500L).getTotalQuantity(),20);
+        Assert.assertEquals(tradeDTOs.size(), 0);
     }
 
     @Test
     public void orderBookMatchBuyOrderOnAsksMarket(){
 //      Buy as much as possible, disregard remaining unfilled qty
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsksMarket(20);
-        Assert.assertEquals(remainingRequestQty, 0);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsksMarket(20,9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 3);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), false);
         Assert.assertEquals(orderBook.getAsks().get(2_00L).getTotalQuantity(), 6);
     }
@@ -115,8 +137,11 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchBuyOrderOnAsksMarket2(){
 //      Buy as much as possible, disregard remaining unfilled qty
-        long remainingRequestQty = orderBook.matchBuyOrderOnAsksMarket(8);
-        Assert.assertEquals(remainingRequestQty, 0);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchBuyOrderOnAsksMarket(8,9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 1);
         Assert.assertEquals(orderBook.getAsks().containsKey(1_00L), true);
         Assert.assertEquals(orderBook.getAsks().get(1_00L).getTotalQuantity(), 7);
     }
@@ -124,16 +149,22 @@ public class OrderBookTest {
     @Test
     public void orderBookMatchSellOrderOnBidsMarket(){
 //      Sell as much as possible, disregard remaining unfilled qty
-        long remainingRequestQty = orderBook.matchSellOrderOnBidsMarket(20);
-        Assert.assertEquals(remainingRequestQty, 0);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchSellOrderOnBidsMarket(20,9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 3);
         Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
     }
 
     @Test
     public void orderBookMatchSellOrderOnBidsMarket2(){
 //      Sell as much as possible, disregard remaining unfilled qty
-        long remainingRequestQty = orderBook.matchSellOrderOnBidsMarket(50);
-        Assert.assertEquals(remainingRequestQty, 22);
+        Queue<TradeDTO> tradeDTOs = orderBook.matchSellOrderOnBidsMarket(50,9);
+        for(TradeDTO tradeDTO:tradeDTOs){
+            System.out.println(tradeDTO.toString());
+        }
+        Assert.assertEquals(tradeDTOs.size(), 4);
         Assert.assertEquals(orderBook.getBids().containsKey(2_00L), false);
         Assert.assertEquals(orderBook.getBids().containsKey(1_00L), false);
     }

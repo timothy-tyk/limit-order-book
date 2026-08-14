@@ -32,4 +32,9 @@ public class TradeDTO {
     public long getQuantity() {
         return quantity;
     }
+
+    @Override
+    public String toString(){
+        return String.format("buyOrderId = %s | sellOrderId = %s | price = %s | qty = %s", buyOrderId,sellOrderId,price,quantity);
+    }
 }

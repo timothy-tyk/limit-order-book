@@ -70,11 +70,13 @@ public class OrderBook {
             restUnfilledOrderQuantities(buyPrice, buyQuantity, Side.BUY, orderId);
         }else {
             //Cheapest SELLs get executed first
-            while (!asks.isEmpty() && asks.firstKey() <= buyPrice) {
+            while (remainingRequestQty>0 && !asks.isEmpty() && asks.firstKey() <= buyPrice) {
                 lowestAsk = asks.firstKey();
                 PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
-                tradeDTOs.addAll(lowestSellingPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById));
+                Queue<TradeDTO> tradeDtoPerPriceLevel = lowestSellingPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById);
+                tradeDTOs.addAll(tradeDtoPerPriceLevel);
                 checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
+                remainingRequestQty = calculateRemainingQtyAfterTrade(remainingRequestQty, tradeDtoPerPriceLevel);
             }
             // if there are remaining qty unfilled, move to resting order
             if (remainingRequestQty > 0) {
@@ -98,11 +100,13 @@ public class OrderBook {
             restUnfilledOrderQuantities(sellPrice, sellQuantity, Side.SELL, orderId);
         }else {
             //Highest BUYs get executed first
-            while (!bids.isEmpty() && bids.lastKey() >= sellPrice) {
+            while (remainingRequestQty>0 && !bids.isEmpty() && bids.lastKey() >= sellPrice) {
                 highestBid = bids.lastKey();
                 PriceLevel highestBuyPriceLevel = bids.get(highestBid);
-                tradeDTOs.addAll(highestBuyPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById));
+                Queue<TradeDTO> tradeDtoPerPriceLevel =highestBuyPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById);
+                tradeDTOs.addAll(tradeDtoPerPriceLevel);
                 checkAndCleanupPriceLevel(highestBid, Side.BUY);
+                remainingRequestQty = calculateRemainingQtyAfterTrade(remainingRequestQty, tradeDtoPerPriceLevel);
             }
             // if there are remaining qty unfilled, move to resting order
             if (remainingRequestQty > 0) {
@@ -138,11 +142,13 @@ public class OrderBook {
         Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         long remainingRequestQty = buyQuantity;
         //Cheapest SELLs get executed first
-        while (!asks.isEmpty()) {
+        while (remainingRequestQty>0 && !asks.isEmpty()) {
             long lowestAsk = asks.firstKey();
             PriceLevel lowestSellingPriceLevel = asks.get(lowestAsk);
-            tradeDTOs.addAll(lowestSellingPriceLevel.fulfilOrder(orderId,remainingRequestQty, ordersById));
+            Queue<TradeDTO> tradeDtoPerPriceLevel =lowestSellingPriceLevel.fulfilOrder(orderId,remainingRequestQty, ordersById);
+            tradeDTOs.addAll(tradeDtoPerPriceLevel);
             checkAndCleanupPriceLevel(lowestAsk, Side.SELL);
+            remainingRequestQty = calculateRemainingQtyAfterTrade(remainingRequestQty, tradeDtoPerPriceLevel);
         }
         // if there are remaining qty unfilled, disregard them
         return tradeDTOs;
@@ -152,11 +158,13 @@ public class OrderBook {
         Queue<TradeDTO> tradeDTOs = new ArrayDeque<>();
         long remainingRequestQty = sellQuantity;
         //Highest BUYs get executed first
-        while (!bids.isEmpty()) {
+        while (remainingRequestQty>0 && !bids.isEmpty()) {
             long highestBid = bids.lastKey();
             PriceLevel highestBuyPriceLevel = bids.get(highestBid);
-            tradeDTOs.addAll(highestBuyPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById));
+            Queue<TradeDTO> tradeDtoPerPriceLevel = highestBuyPriceLevel.fulfilOrder(orderId, remainingRequestQty, ordersById);
+            tradeDTOs.addAll(tradeDtoPerPriceLevel);
             checkAndCleanupPriceLevel(highestBid, Side.BUY);
+            remainingRequestQty = calculateRemainingQtyAfterTrade(remainingRequestQty, tradeDtoPerPriceLevel);
         }
         // if there are remaining qty unfilled, disregard them
         return tradeDTOs;
@@ -218,6 +226,11 @@ public class OrderBook {
         return tradeDTOs;
     }
 
-
+    public long calculateRemainingQtyAfterTrade(long remainingQty,Queue<TradeDTO> tradeDTOs){
+        for(TradeDTO t: tradeDTOs){
+            remainingQty -= t.getQuantity();
+        }
+        return remainingQty;
+    }
 
 }
