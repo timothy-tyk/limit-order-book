@@ -18,5 +18,6 @@ public class RandomWorkloadGeneratorTest {
     public void generateTest(){
         long liveSize = randomWorkloadGenerator.generate(100_000);
         Assert.assertEquals(liveSize>0,true);
+        Assert.assertEquals(randomWorkloadGenerator.getLastProcessedSequence(),100_000);
     }
 }

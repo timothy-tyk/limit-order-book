@@ -19,11 +19,11 @@ public final class Trade implements Event{
 
     @Override
     public long eventSequence() {
-        return 0;
+        return eventSequence;
     }
 
     @Override
     public long commandSequence() {
-        return 0;
+        return commandSequence;
     }
 }

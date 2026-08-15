@@ -147,6 +147,24 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(orderBook.getAsks().isEmpty(), true);
     }
 
+    @Test
+    public void limitOrderRejectedTest(){
+        orderBook.getBids().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.BUY, 1));
+        orderBook.getBids().put(2_00L,orderBook.createNewPriceLevel(2_00, 10, Side.BUY, 2));
+        long seq = engine.lastProcessedSequence();
+        AddLimitOrderCommand orderCommand = new AddLimitOrderCommand(seq, seq,Side.SELL,1_50L,-10);
+        engine.addLimitOrder(orderCommand);
+        Assert.assertEquals(orderBook.getAsks().containsKey(1_50L), false);
+    }
+
+    @Test
+    public void marketLimitOrderRejectedTest(){
+        orderBook.getAsks().put(1_00L,orderBook.createNewPriceLevel(1_00, 20, Side.SELL,1));
+        MarketOrderCommand command = new MarketOrderCommand(engine.lastProcessedSequence(), 1L,Side.BUY,0);
+        engine.marketLimitOrder(command);
+        Assert.assertEquals(orderBook.getAsks().isEmpty(), false);
+    }
+
 
     @Test
     public void sanityTest(){

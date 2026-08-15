@@ -140,6 +140,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 4. If unfilled quantity remains, reject/cancel it.
          */
         if(cmd.validateCommand()){
+            emitMarketOrderAccepted(cmd.sequence(), cmd.getOrderId(), cmd.getSide(),cmd.getQuantity());
             Queue<TradeDTO> tradeDTOs;
             if(cmd.getSide().equals(Side.BUY)){
                 tradeDTOs = orderBook.matchBuyOrderOnAsksMarket(cmd.getQuantity(), cmd.getOrderId());
@@ -150,7 +151,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
                 emitTradeEvent(nextEventSequence++,cmd.sequence(), tradeDTO.getBuyOrderId(), tradeDTO.getSellOrderId(), tradeDTO.getPrice(), tradeDTO.getQuantity());
             }
         }else{
-            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
+            emitMarketOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
 
     }

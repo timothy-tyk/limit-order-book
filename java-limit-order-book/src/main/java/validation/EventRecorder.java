@@ -79,19 +79,19 @@ public class EventRecorder implements EventListener {
 
     public String summary(){
         StringBuffer sb = new StringBuffer();
-        sb.append("Orders Accepted: "+orderAcceptedCount);
+        sb.append("Orders Accepted: "+getOrderAcceptedCount());
         sb.append("\n");
-        sb.append("Orders Modified: "+orderModifiedCount);
+        sb.append("Orders Modified: "+getOrderModifiedCount());
         sb.append("\n");
-        sb.append("Orders Cancelled: "+orderCancelledCount);
+        sb.append("Orders Cancelled: "+getOrderCancelledCount());
         sb.append("\n");
-        sb.append("Orders Rejected: "+orderRejectedCount);
+        sb.append("Orders Rejected: "+getOrderRejectedCount());
         sb.append("\n");
-        sb.append("Market Orders Accepted: "+marketOrderAcceptedCount);
+        sb.append("Market Orders Accepted: "+getMarketOrderAcceptedCount());
         sb.append("\n");
-        sb.append("Market Orders Rejected: "+marketOrderRejectedCount);
+        sb.append("Market Orders Rejected: "+getMarketOrderRejectedCount());
         sb.append("\n");
-        sb.append("Total Trades: "+tradeCount);
+        sb.append("Total Trades: "+getTradeCount());
         sb.append("\n");
         sb.append("Last Event Sequence: "+lastEventSequence);
         return sb.toString();
