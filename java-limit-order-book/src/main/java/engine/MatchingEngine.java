@@ -1,6 +1,7 @@
 package engine;
 
 import command.Command;
+import core.OrderBook;
 
 public interface MatchingEngine {
     void start();
@@ -10,4 +11,8 @@ public interface MatchingEngine {
     long lastProcessedSequence();
 
     void submitCommand(Command command);
+
+    OrderBook getOrderBook();
+
+    void showEventSummary();
 }

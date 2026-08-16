@@ -77,6 +77,7 @@ public class EventRecorder implements EventListener {
         return marketOrderRejectedCount;
     }
 
+    @Override
     public String summary(){
         StringBuffer sb = new StringBuffer();
         sb.append("Orders Accepted: "+getOrderAcceptedCount());

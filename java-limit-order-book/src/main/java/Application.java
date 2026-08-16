@@ -1,5 +1,6 @@
 import event.EventListener;
 import validation.EventRecorder;
+import validation.InvariantChecker;
 import workload.RandomWorkloadGenerator;
 import workload.WorkloadGenerator;
 import engine.MatchingEngine;
@@ -25,11 +26,12 @@ public class Application {
         workload.generate(commandCount);
         long end = System.nanoTime();
 
-//        InvariantChecker.check(engine);
-//        InvariantChecker.check(recorder.events());
 
         System.out.println("Commands processed: " + workload.getLastProcessedSequence());
 //        System.out.println("Events produced: " + recorder.size());
         System.out.println("Elapsed ms: " + (end - start) / 1_000_000);
+
+        InvariantChecker.check(engine);
+//        InvariantChecker.check(recorder.events());
     }
 }

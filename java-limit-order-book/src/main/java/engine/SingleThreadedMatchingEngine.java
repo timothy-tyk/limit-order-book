@@ -19,6 +19,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         this.eventListener = eventListener;
     }
 
+    @Override
     public OrderBook getOrderBook() {
         return orderBook;
     }
@@ -188,5 +189,10 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     void emitTradeEvent(long nextEventSequence, long commandSequence, long buyOrderId, long sellOrderId, long price, long quantity){
         Trade tradeEvent = new Trade(nextEventSequence,commandSequence,buyOrderId,sellOrderId,price,quantity);
         eventListener.onEvent(tradeEvent);
+    }
+
+    @Override
+    public void showEventSummary(){
+        System.out.println(eventListener.summary());
     }
 }
