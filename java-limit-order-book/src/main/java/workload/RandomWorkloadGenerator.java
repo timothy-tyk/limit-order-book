@@ -34,7 +34,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
 
             int action = random.nextInt(100);
 
-            if(action<100 || liveOrderIds.isEmpty()){
+            if(action<70 || liveOrderIds.isEmpty()){
 //                System.out.println("AddLimitOrderCommand - "+sequence+" "+nextOrderId);
 //              Add Limit Order (70%)
                 Side side = random.nextBoolean()?Side.BUY:Side.SELL;
