@@ -197,7 +197,7 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(engine.getOrderBook().getAsks().containsKey(price),true);
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getTotalQuantity(),49);
         Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrderCount(),1);
-        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrders().getFirst().getOrderId(),3);
+        Assert.assertEquals(engine.getOrderBook().getAsks().get(price).getOrders().pollFirstEntry().getValue().getOrderId(),3);
     }
 
     @Test
@@ -236,7 +236,7 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(engine.getOrderBook().getBids().containsKey(100005L),true);
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrderCount(),1);
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getTotalQuantity(),32);
-        Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrders().getFirst().getOrderId(),5);
+        Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrders().pollFirstEntry().getValue().getOrderId(),5);
 
 
 

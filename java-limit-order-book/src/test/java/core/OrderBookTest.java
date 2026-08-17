@@ -5,10 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayDeque;
-import java.util.Date;
-import java.util.Queue;
-import java.util.TreeMap;
+import java.util.*;
 
 public class OrderBookTest {
     OrderBook orderBook;
@@ -20,17 +17,17 @@ public class OrderBookTest {
 
         Order order1 = new Order(1L,1L,Side.SELL,1_00,10, new Date().getTime());
         Order order2 = new Order(2L,1L,Side.SELL, 1_00,5,new Date().getTime());
-        ArrayDeque<Order> sellDeque1L = new ArrayDeque<>();
-        sellDeque1L.add(order1);
-        sellDeque1L.add(order2);
-        PriceLevel priceLevelSell1L = new PriceLevel(sellDeque1L,order1.getQuantity()+order2.getQuantity(),sellDeque1L.size());
+        LinkedHashMap<Long,Order> sellMap1L = new LinkedHashMap<>();
+        sellMap1L.put(1L,order1);
+        sellMap1L.put(2L,order2);
+        PriceLevel priceLevelSell1L = new PriceLevel(sellMap1L,order1.getQuantity()+order2.getQuantity(),sellMap1L.size());
 
         Order order3 = new Order(3L,1L,Side.SELL,2_00,6, new Date().getTime());
         Order order4 = new Order(4L,1L,Side.SELL, 2_00,5,new Date().getTime());
-        ArrayDeque<Order> sellDeque2L = new ArrayDeque<>();
-        sellDeque2L.add(order3);
-        sellDeque2L.add(order4);
-        PriceLevel priceLevelSell2L = new PriceLevel(sellDeque2L,order3.getQuantity()+order4.getQuantity(),sellDeque2L.size());
+        LinkedHashMap<Long,Order> sellMap2L = new LinkedHashMap<>();
+        sellMap2L.put(3L,order3);
+        sellMap2L.put(4L,order4);
+        PriceLevel priceLevelSell2L = new PriceLevel(sellMap2L,order3.getQuantity()+order4.getQuantity(),sellMap2L.size());
         asks.put(1_00L, priceLevelSell1L);
         asks.put(2_00L, priceLevelSell2L);
         orderBook.setAsks(asks);
@@ -39,17 +36,17 @@ public class OrderBookTest {
 
         Order order5 = new Order(5L,1L,Side.BUY,1_00,10,new Date().getTime());
         Order order6 = new Order(6L,1L,Side.BUY, 1_00,5,new Date().getTime());
-        ArrayDeque<Order> buyDeque1L = new ArrayDeque<>();
-        buyDeque1L.add(order5);
-        buyDeque1L.add(order6);
-        PriceLevel priceLevelBuy1L = new PriceLevel(buyDeque1L,order5.getQuantity()+order6.getQuantity(),buyDeque1L.size());
+        LinkedHashMap<Long,Order> buyMap1L = new LinkedHashMap<>();
+        buyMap1L.put(5L,order5);
+        buyMap1L.put(6L,order6);
+        PriceLevel priceLevelBuy1L = new PriceLevel(buyMap1L,order5.getQuantity()+order6.getQuantity(),buyMap1L.size());
 
         Order order7 = new Order(7L,1L,Side.BUY,2_00,8,new Date().getTime());
         Order order8 = new Order(8L,1L,Side.BUY, 2_00,5,new Date().getTime());
-        ArrayDeque<Order> buyDeque2L = new ArrayDeque<>();
-        buyDeque2L.add(order7);
-        buyDeque2L.add(order8);
-        PriceLevel priceLevelBuy2L = new PriceLevel(buyDeque2L,order7.getQuantity()+order8.getQuantity(),buyDeque2L.size());
+        LinkedHashMap<Long,Order> buyMap2L = new LinkedHashMap<>();
+        buyMap2L.put(7L,order7);
+        buyMap2L.put(8L,order8);
+        PriceLevel priceLevelBuy2L = new PriceLevel(buyMap2L,order7.getQuantity()+order8.getQuantity(),buyMap2L.size());
         bids.put(1_00L, priceLevelBuy1L);
         bids.put(2_00L, priceLevelBuy2L);
         orderBook.setBids(bids);

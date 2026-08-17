@@ -171,9 +171,9 @@ public class OrderBook {
     }
 
     public PriceLevel createNewPriceLevel(long price, long quantity, Side side, long orderId){
-        ArrayDeque<Order> orders = new ArrayDeque<>();
+        LinkedHashMap<Long,Order> orders = new LinkedHashMap<>();
         Order newOrder = new Order(orderId, symbolId,side, price, quantity, new Date().getTime());
-        orders.add(newOrder);
+        orders.put(orderId, newOrder);
         ordersById.put(orderId, newOrder);
         return new PriceLevel(orders,quantity,1);
     }

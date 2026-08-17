@@ -78,6 +78,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 3. If quantity remains after matching:
          *        rest the order on the appropriate side.
          */
+//        long addStart = System.nanoTime();
         long remainingRequestQty=cmd.getQuantity();
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.getOrderId())){
             emitOrderAccepted(cmd.sequence(),cmd.getOrderId(), cmd.getSide(),cmd.getPrice(),cmd.getQuantity());
@@ -93,6 +94,8 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         }else{
             emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
+//        long addEnd = System.nanoTime();
+//        System.out.println("Add: "+ (addEnd-addStart));
     }
 
     void cancelLimitOrder(CancelOrderCommand cmd){
@@ -106,6 +109,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          *    - if that price level becomes empty, remove the price level
          *    - remove it from ordersById
          */
+//        long cancelStart = System.nanoTime();
         long orderIdToCancel = cmd.getOrderId();
         if(orderBook.validateOrderExists(orderIdToCancel)){
             emitOrderCancelled(cmd.sequence(),orderIdToCancel);
@@ -113,6 +117,8 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         }else{
             emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
+//        long cancelEnd = System.nanoTime();
+//        System.out.println("Cancel: "+ (cancelEnd-cancelStart));
     }
     void modifyLimitOrder(ModifyOrderCommand cmd){
         /**
@@ -120,6 +126,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 2. Cancel/remove it.
          * 3. Add a new order using the new price/quantity.
          */
+//        long modifyStart = System.nanoTime();
         long orderIdToModify = cmd.getOrderId();
         if(orderBook.validateOrderExists(orderIdToModify)){
 
@@ -128,6 +135,8 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         }else{
             emitOrderRejected(cmd.sequence(),cmd.getOrderId());
         }
+//        long modifyEnd = System.nanoTime();
+//        System.out.println("Add: "+ (modifyEnd-modifyStart));
     }
     public void marketLimitOrder(MarketOrderCommand cmd){
         /**

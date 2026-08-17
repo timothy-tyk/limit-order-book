@@ -5,17 +5,17 @@ import event.TradeDTO;
 import java.util.*;
 
 public class PriceLevel {
-    private ArrayDeque<Order> orders;
+    private LinkedHashMap<Long,Order> orders;
     private long totalQuantity;
     private long orderCount;
 
-    public PriceLevel(ArrayDeque<Order> orders, long totalQuantity, long orderCount){
+    public PriceLevel(LinkedHashMap<Long,Order> orders, long totalQuantity, long orderCount){
         this.orders = orders;
         this.totalQuantity = totalQuantity;
         this.orderCount = orderCount;
     }
 
-    public ArrayDeque<Order> getOrders() {
+    public LinkedHashMap<Long,Order> getOrders() {
         return orders;
     }
 
@@ -31,8 +31,10 @@ public class PriceLevel {
         Queue<TradeDTO> tradeEvents = new ArrayDeque<>();
         long remainingRequestQty = requestQuantity;
 //        BUY fully
-        while(orders.peek()!=null && remainingRequestQty>0 && totalQuantity>0){
-            Order order = orders.getFirst();
+        Iterator<Map.Entry<Long, Order>> iterator = orders.entrySet().iterator();
+        while(iterator.hasNext() && remainingRequestQty>0 && totalQuantity>0){
+            Map.Entry<Long, Order> entry = iterator.next();
+            Order order = entry.getValue();
             long orderQty = order.getRemainingQuantity();
             if(orderQty>remainingRequestQty){
                 order.setRemainingQuantity(orderQty-remainingRequestQty);
@@ -41,9 +43,8 @@ public class PriceLevel {
                 tradeEvents.add(tradeEvent);
                 remainingRequestQty = 0;
             }else{
-                long orderIdToRemove = orders.getFirst().getOrderId();
-                orders.removeFirst();
-                ordersById.remove(orderIdToRemove);
+                iterator.remove();
+                ordersById.remove(order.getOrderId());
                 orderCount--;
                 remainingRequestQty-=orderQty;
                 totalQuantity-=orderQty;
@@ -55,14 +56,14 @@ public class PriceLevel {
     }
 
     public void addOrder(Order order){
-        orders.add(order);
+        orders.put(order.getOrderId(),order);
         totalQuantity+=order.getQuantity();
         orderCount+=1;
 
     }
 
     public void removeOrder(Order order){
-        orders.remove(order);
+        orders.remove(order.getOrderId());
         orderCount--;
         totalQuantity-=order.getRemainingQuantity();
     }

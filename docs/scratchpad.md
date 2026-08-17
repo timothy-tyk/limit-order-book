@@ -80,3 +80,17 @@ Total Trades: 554624
 Last Event Sequence: 1554624
 Commands processed: 1000000
 Elapsed ms: 25922
+===
+
+< === LinkedHashMap Impl === >
+
+Orders Accepted: 699718
+Orders Modified: 19956
+Orders Cancelled: 40015
+Orders Rejected: 240311
+Market Orders Accepted: 0
+Market Orders Rejected: 0
+Total Trades: 554624
+Last Event Sequence: 1554624
+Commands processed: 1000000
+Elapsed ms: 26135

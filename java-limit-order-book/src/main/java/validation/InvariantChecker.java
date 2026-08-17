@@ -43,7 +43,7 @@ public class InvariantChecker {
         for(Long key: orderBook.getBids().keySet()){
             PriceLevel pl = orderBook.getBids().get(key);
             long qty = 0;
-            for(Order o: pl.getOrders()){
+            for(Order o: pl.getOrders().values()){
                 fullBidOrderList.add(o);
                 qty+=o.getRemainingQuantity();
             }
@@ -53,7 +53,7 @@ public class InvariantChecker {
         for(Long key: orderBook.getAsks().keySet()){
             PriceLevel pl = orderBook.getAsks().get(key);
             long qty = 0;
-            for(Order o: pl.getOrders()){
+            for(Order o: pl.getOrders().values()){
                 fullAskOrderList.add(o);
                 qty+=o.getRemainingQuantity();
             }

@@ -7,9 +7,7 @@ import command.ModifyOrderCommand;
 import core.Side;
 import engine.MatchingEngine;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Random;
+import java.util.*;
 
 public final class RandomWorkloadGenerator implements WorkloadGenerator{
     private final long seed;
@@ -23,7 +21,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
     @Override
     public long generate(long commandCount){
         Random random = new Random(seed);
-        Deque<Long> liveOrderIds = new ArrayDeque<>();
+        List<Long> liveOrderIds = new ArrayList<>();
         long nextOrderId = 1;
         long sequence = 1;
 
@@ -74,22 +72,26 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
         return liveOrderIds.size();
     }
 
-    private long removeLiveOrderId(Random random, Deque<Long> liveOrderIds){
+    private long removeLiveOrderId(Random random, List<Long> liveOrderIds){
         long index = random.nextInt(liveOrderIds.size());
-        if(index==0){
-            return liveOrderIds.removeFirst();
-        }else if(index==liveOrderIds.size()+1){
-            return liveOrderIds.removeLast();
-        }else{
-        long current = 0;
-        for(Long orderId:liveOrderIds){
-            if(current == index){
-                liveOrderIds.remove(orderId);
-                return orderId;
-            }
-            current++;
-        }
-        return liveOrderIds.removeFirst();
+//        if(index==0){
+//            return liveOrderIds.removeFirst();
+//        }else if(index==liveOrderIds.size()+1){
+//            return liveOrderIds.removeLast();
+//        }else{
+//        long current = 0;
+//        for(Long orderId:liveOrderIds){
+//            if(current == index){
+//                liveOrderIds.remove(orderId);
+//                return orderId;
+//            }
+//            current++;
+//        }
+        try{
+            return liveOrderIds.get((int)index);
+
+        }finally{
+            liveOrderIds.remove(index);
         }
     }
 
