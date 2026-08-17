@@ -41,13 +41,13 @@ public class OrderBook {
     }
 
     public void addOrder(Order order){
-        PriceLevel priceLevel = null;
+        PriceLevel priceLevel;
         if(order.getSide().equals(Side.BUY)){
             priceLevel = bids.get(order.getPrice())!=null? bids.get(order.getPrice()):createNewPriceLevel(order.getPrice(), order.getQuantity(), order.getSide(),order.getOrderId());
             priceLevel.addOrder(order);
             ordersById.put(order.getOrderId(), order);
         }else{
-            priceLevel = asks.get(order.getPrice());
+            priceLevel = asks.get(order.getPrice())!=null? asks.get(order.getPrice()):createNewPriceLevel(order.getPrice(), order.getQuantity(), order.getSide(),order.getOrderId());
             priceLevel.addOrder(order);
             ordersById.put(order.getOrderId(), order);
         }
@@ -122,7 +122,7 @@ public class OrderBook {
                 PriceLevel newBuyPriceLevel = createNewPriceLevel(price, quantity, Side.BUY, orderId);
                 bids.put(price, newBuyPriceLevel);
             } else {
-                Order newBuyOrder = new Order(orderId, symbolId, Side.BUY, price, quantity, new Date().getTime());
+                Order newBuyOrder = new Order(orderId, symbolId, Side.BUY, price, quantity, System.currentTimeMillis());
                 bids.get(price).addOrder(newBuyOrder);
                 ordersById.put(orderId, newBuyOrder);
             }
@@ -131,7 +131,7 @@ public class OrderBook {
                 PriceLevel newSellPriceLevel = createNewPriceLevel(price, quantity, Side.SELL, orderId);
                 asks.put(price, newSellPriceLevel);
             } else {
-                Order newSellOrder = new Order(orderId, symbolId, Side.SELL, price, quantity, new Date().getTime());
+                Order newSellOrder = new Order(orderId, symbolId, Side.SELL, price, quantity, System.currentTimeMillis());
                 asks.get(price).addOrder(newSellOrder);
                 ordersById.put(orderId, newSellOrder);
             }
@@ -172,7 +172,7 @@ public class OrderBook {
 
     public PriceLevel createNewPriceLevel(long price, long quantity, Side side, long orderId){
         LinkedHashMap<Long,Order> orders = new LinkedHashMap<>();
-        Order newOrder = new Order(orderId, symbolId,side, price, quantity, new Date().getTime());
+        Order newOrder = new Order(orderId, symbolId,side, price, quantity, System.currentTimeMillis());
         orders.put(orderId, newOrder);
         ordersById.put(orderId, newOrder);
         return new PriceLevel(orders,quantity,1);

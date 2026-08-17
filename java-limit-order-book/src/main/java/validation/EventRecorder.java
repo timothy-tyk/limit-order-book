@@ -16,6 +16,12 @@ public class EventRecorder implements EventListener {
     private long marketOrderAcceptedCount;
     private long marketOrderRejectedCount;
 
+    private long orderRejected_UnknownOrderCount;
+    private long orderRejected_DuplicatedOrderIdCount;
+    private long orderRejected_InvalidPriceCount;
+    private long orderRejected_InvalidQtyCount;
+    private long orderRejected_NoLiquidityCount;
+
     private long lastEventSequence = 0;
 
     public EventRecorder(boolean retainEvents) {
@@ -34,10 +40,21 @@ public class EventRecorder implements EventListener {
             case OrderAccepted accepted -> orderAcceptedCount++;
             case OrderCancelled  cancelled -> orderCancelledCount++;
             case OrderModified modified -> orderModifiedCount++;
-            case OrderRejected rejected -> orderRejectedCount++;
+            case OrderRejected rejected -> handleOrderRejectedEvent(rejected);
             case Trade trade -> tradeCount++;
             case MarketOrderAccepted marketOrderAccepted -> marketOrderAcceptedCount++;
             case MarketOrderRejected marketOrderRejected -> marketOrderRejectedCount++;
+        }
+    }
+
+    public void handleOrderRejectedEvent(OrderRejected rejected){
+        orderRejectedCount++;
+        switch(rejected.getReason()){
+            case UNKNOWN_ORDER -> orderRejected_UnknownOrderCount++;
+            case DUPLICATED_ORDER_ID -> orderRejected_DuplicatedOrderIdCount++;
+            case INVALID_PRICE -> orderRejected_InvalidPriceCount++;
+            case INVALID_QTY -> orderRejected_InvalidQtyCount++;
+            case NO_LIQUIDITY -> orderRejected_NoLiquidityCount++;
         }
     }
 
@@ -87,6 +104,16 @@ public class EventRecorder implements EventListener {
         sb.append("Orders Cancelled: "+getOrderCancelledCount());
         sb.append("\n");
         sb.append("Orders Rejected: "+getOrderRejectedCount());
+        sb.append("\n");
+        sb.append("Rejection Reason: UNKNOWN_ORDER | "+orderRejected_UnknownOrderCount);
+        sb.append("\n");
+        sb.append("Rejection Reason: DUPLICATED_ORDER_ID | "+orderRejected_DuplicatedOrderIdCount);
+        sb.append("\n");
+        sb.append("Rejection Reason: INVALID_PRICE | "+orderRejected_InvalidPriceCount);
+        sb.append("\n");
+        sb.append("Rejection Reason: INVALID_QTY | "+orderRejected_InvalidQtyCount);
+        sb.append("\n");
+        sb.append("Rejection Reason: NO_LIQUIDITY | "+orderRejected_NoLiquidityCount);
         sb.append("\n");
         sb.append("Market Orders Accepted: "+getMarketOrderAcceptedCount());
         sb.append("\n");

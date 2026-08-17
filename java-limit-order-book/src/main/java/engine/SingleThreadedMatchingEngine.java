@@ -4,6 +4,7 @@ import command.*;
 import core.OrderBook;
 import core.Side;
 import event.*;
+import validation.OrderRejectedReason;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -92,7 +93,9 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
                 emitTradeEvent(nextEventSequence++,cmd.sequence(), tradeDTO.getBuyOrderId(), tradeDTO.getSellOrderId(), tradeDTO.getPrice(), tradeDTO.getQuantity());
             }
         }else{
-            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
+            if(cmd.getPrice()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_PRICE);
+            else if(cmd.getQuantity()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_QTY);
+            else if(!orderBook.validateOrderExists(cmd.getOrderId())) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.UNKNOWN_ORDER);
         }
 //        long addEnd = System.nanoTime();
 //        System.out.println("Add: "+ (addEnd-addStart));
@@ -115,7 +118,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
             emitOrderCancelled(cmd.sequence(),orderIdToCancel);
             orderBook.cancelOrder(orderIdToCancel);
         }else{
-            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
+            if(!orderBook.validateOrderExists(cmd.getOrderId())) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.UNKNOWN_ORDER);
         }
 //        long cancelEnd = System.nanoTime();
 //        System.out.println("Cancel: "+ (cancelEnd-cancelStart));
@@ -133,7 +136,9 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
             emitOrderModified(cmd.sequence(),orderIdToModify,cmd.getSide(),cmd.getNewPrice(),cmd.getNewQuantity());
             orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity(), cmd.getOrderId());
         }else{
-            emitOrderRejected(cmd.sequence(),cmd.getOrderId());
+            if(cmd.getNewPrice()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_PRICE);
+            else if(cmd.getNewQuantity()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_QTY);
+            else if(!orderBook.validateOrderExists(cmd.getOrderId())) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.UNKNOWN_ORDER);
         }
 //        long modifyEnd = System.nanoTime();
 //        System.out.println("Add: "+ (modifyEnd-modifyStart));
@@ -161,7 +166,8 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
                 emitTradeEvent(nextEventSequence++,cmd.sequence(), tradeDTO.getBuyOrderId(), tradeDTO.getSellOrderId(), tradeDTO.getPrice(), tradeDTO.getQuantity());
             }
         }else{
-            emitMarketOrderRejected(cmd.sequence(),cmd.getOrderId());
+            if(cmd.getQuantity()<=0) emitMarketOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_QTY);
+            else if(!orderBook.validateOrderExists(cmd.getOrderId())) emitMarketOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.UNKNOWN_ORDER);
         }
 
     }
@@ -181,8 +187,8 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         eventListener.onEvent(orderCancelled);
     }
 
-    void emitOrderRejected(long commandSequence, long orderId){
-        OrderRejected orderRejected = new OrderRejected(nextEventSequence++,commandSequence, orderId);
+    void emitOrderRejected(long commandSequence, long orderId, OrderRejectedReason reason){
+        OrderRejected orderRejected = new OrderRejected(nextEventSequence++,commandSequence, orderId, reason);
         eventListener.onEvent(orderRejected);
     }
 
@@ -190,8 +196,8 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
         MarketOrderAccepted marketOrderAccepted = new MarketOrderAccepted(nextEventSequence++,commandSequence,orderId,side,quantity);
         eventListener.onEvent(marketOrderAccepted);
     }
-    void emitMarketOrderRejected(long commandSequence, long orderId){
-        MarketOrderRejected marketOrderRejected = new MarketOrderRejected(nextEventSequence++,commandSequence,orderId);
+    void emitMarketOrderRejected(long commandSequence, long orderId, OrderRejectedReason reason){
+        MarketOrderRejected marketOrderRejected = new MarketOrderRejected(nextEventSequence++,commandSequence,orderId, reason);
         eventListener.onEvent(marketOrderRejected);
     }
 
