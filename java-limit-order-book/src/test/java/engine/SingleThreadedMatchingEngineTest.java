@@ -1,5 +1,6 @@
 package engine;
 
+import benchmark.LatencyRecorder;
 import command.AddLimitOrderCommand;
 import command.CancelOrderCommand;
 import command.MarketOrderCommand;
@@ -22,7 +23,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Before
     public void setup(){
-        engine = new SingleThreadedMatchingEngine(new EventRecorder(true));
+        engine = new SingleThreadedMatchingEngine(new EventRecorder(true), new LatencyRecorder(1000));
         orderBook = engine.getOrderBook();
     }
 

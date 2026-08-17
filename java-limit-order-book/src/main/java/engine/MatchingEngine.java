@@ -1,5 +1,6 @@
 package engine;
 
+import benchmark.WorkloadProfile;
 import command.Command;
 import core.OrderBook;
 
@@ -14,5 +15,5 @@ public interface MatchingEngine {
 
     OrderBook getOrderBook();
 
-    void showEventSummary();
+    void showEventSummary(WorkloadProfile profile);
 }

@@ -1,5 +1,7 @@
 package engine;
 
+import benchmark.LatencyRecorder;
+import benchmark.WorkloadProfile;
 import command.*;
 import core.OrderBook;
 import core.Side;
@@ -14,10 +16,13 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     private OrderBook orderBook;
     private final EventListener eventListener;
     private long nextEventSequence = 1;
+    private LatencyRecorder latencyRecorder;
 
-    public SingleThreadedMatchingEngine(EventListener eventListener) {
+
+    public SingleThreadedMatchingEngine(EventListener eventListener, LatencyRecorder recorder) {
         this.orderBook = new OrderBook();
         this.eventListener = eventListener;
+        this. latencyRecorder = recorder;
     }
 
     @Override
@@ -43,6 +48,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     @Override
     public void submitCommand(Command command){
         // TODO: switch case for each command type
+        long latencyStart = System.nanoTime();
         switch(command){
             case AddLimitOrderCommand cmd -> addLimitOrder(cmd);
             case CancelOrderCommand cmd -> cancelLimitOrder(cmd);
@@ -50,6 +56,9 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
             case MarketOrderCommand cmd -> marketLimitOrder(cmd);
             default -> throw new IllegalStateException("Unexpected value: " + command);
         }
+        long latencyEnd = System.nanoTime();
+        latencyRecorder.record(latencyEnd-latencyStart);
+
         lastProcessedSequence = command.sequence();
     }
 
@@ -207,7 +216,9 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     }
 
     @Override
-    public void showEventSummary(){
+    public void showEventSummary(WorkloadProfile profile){
+        System.out.println(profile.getName());
         System.out.println(eventListener.summary());
+        System.out.println();
     }
 }

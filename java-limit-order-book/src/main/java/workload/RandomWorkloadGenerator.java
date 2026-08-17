@@ -1,5 +1,6 @@
 package workload;
 
+import benchmark.WorkloadProfile;
 import command.*;
 import core.Side;
 import engine.MatchingEngine;
@@ -7,17 +8,19 @@ import engine.MatchingEngine;
 import java.util.*;
 
 public final class RandomWorkloadGenerator implements WorkloadGenerator{
-    private final long seed;
+    private final WorkloadProfile profile;
     private final MatchingEngine engine;
 
-    public RandomWorkloadGenerator(long seed, MatchingEngine engine) {
-        this.seed = seed;
+    public RandomWorkloadGenerator(WorkloadProfile profile, MatchingEngine engine) {
+        this.profile = profile;
         this.engine = engine;
     }
 
     @Override
-    public long generate(long commandCount){
-        Random random = new Random(seed);
+    public long generate(){
+        Random random = new Random(profile.getSeed());
+        long commandCount = profile.getCommandCount();
+
         List<Long> liveOrderIds = new ArrayList<>();
         long nextOrderId = 1;
         long sequence = 1;
@@ -29,7 +32,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
 
             int action = random.nextInt(100);
 
-            if(action<70 || liveOrderIds.isEmpty()){
+            if(action< profile.getAddPercent() || liveOrderIds.isEmpty()){
 //                System.out.println("AddLimitOrderCommand - "+sequence+" "+nextOrderId);
 //              Add Limit Order (70%)
                 Side side = random.nextBoolean()?Side.BUY:Side.SELL;
@@ -37,7 +40,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                 long price = basePrice+priceOffset;
                 long qty = random.nextInt(100)+1;
                 int marketOrNot = random.nextInt(100);
-                if(marketOrNot<10){ //% of orders are Market
+                if(marketOrNot<profile.getMarketPercent()){ //% of orders are Market
                     command = new MarketOrderCommand(sequence, nextOrderId, side, qty);
                 }else {
                     command = new AddLimitOrderCommand(
@@ -50,7 +53,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                 }
                 liveOrderIds.addLast(nextOrderId);
                 nextOrderId++;
-            }else if(action<90){
+            }else if(action<profile.getCancelPercent()){
 //                System.out.println("CancelOrderCommand - "+sequence+" "+nextOrderId);
 //              Cancel Limit Order (20%)
                 long orderIdToRemove = removeRandomLiveOrderId(random, liveOrderIds);
@@ -70,7 +73,8 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
             engine.submitCommand(command);
             sequence++;
         }
-        engine.showEventSummary();
+
+        engine.showEventSummary(profile);
         return liveOrderIds.size();
     }
 
