@@ -73,26 +73,25 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
     }
 
     private long removeLiveOrderId(Random random, List<Long> liveOrderIds){
-        long index = random.nextInt(liveOrderIds.size());
-//        if(index==0){
-//            return liveOrderIds.removeFirst();
-//        }else if(index==liveOrderIds.size()+1){
-//            return liveOrderIds.removeLast();
-//        }else{
-//        long current = 0;
-//        for(Long orderId:liveOrderIds){
-//            if(current == index){
-//                liveOrderIds.remove(orderId);
-//                return orderId;
-//            }
-//            current++;
-//        }
+//        WRONG: long index = random.nextInt(liveOrderIds.size());
+//        using long type will force Java to use List.remove(Object)
+//        time = O(n) instead of O(1).
+        int index = random.nextInt(liveOrderIds.size());
         try{
-            return liveOrderIds.get((int)index);
+            return liveOrderIds.get(index);
 
         }finally{
             liveOrderIds.remove(index);
         }
+
+//        SWAP WITH LAST PATTERN (200ms):
+//        int lastIndex = liveOrderIds.size()-1;
+//        long orderId = liveOrderIds.get(index);
+//        if(index!=lastIndex){
+//            liveOrderIds.set(index, liveOrderIds.get(lastIndex));
+//        }
+//        liveOrderIds.remove(lastIndex);
+//        return orderId;
     }
 
     @Override

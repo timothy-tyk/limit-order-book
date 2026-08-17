@@ -8,11 +8,13 @@ public class PriceLevel {
     private LinkedHashMap<Long,Order> orders;
     private long totalQuantity;
     private long orderCount;
+    private Queue<TradeDTO> tradeEvents;
 
     public PriceLevel(LinkedHashMap<Long,Order> orders, long totalQuantity, long orderCount){
         this.orders = orders;
         this.totalQuantity = totalQuantity;
         this.orderCount = orderCount;
+        this.tradeEvents = new ArrayDeque<>();
     }
 
     public LinkedHashMap<Long,Order> getOrders() {
@@ -28,7 +30,7 @@ public class PriceLevel {
     }
 
     public Queue<TradeDTO> fulfilOrder(long requestOrderId, long requestQuantity, Map<Long, Order> ordersById){
-        Queue<TradeDTO> tradeEvents = new ArrayDeque<>();
+        tradeEvents.clear(); //Reset Trade Events queue
         long remainingRequestQty = requestQuantity;
 //        BUY fully
         Iterator<Map.Entry<Long, Order>> iterator = orders.entrySet().iterator();
