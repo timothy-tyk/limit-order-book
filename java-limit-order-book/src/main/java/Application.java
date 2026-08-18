@@ -1,6 +1,7 @@
 import benchmark.LatencyRecorder;
 import benchmark.WorkloadProfile;
 import event.EventListener;
+import utils.LiveOrderTracker;
 import validation.EventRecorder;
 import validation.InvariantChecker;
 import workload.RandomWorkloadGenerator;
@@ -17,8 +18,9 @@ public class Application {
         final boolean RETAIN_EVENTS = true;
         EventListener eventListener = new EventRecorder(DONT_RETAIN_EVENTS);
         LatencyRecorder latencyRecorder = new LatencyRecorder(1000);
+        LiveOrderTracker tracker = new LiveOrderTracker();
 
-        MatchingEngine engine = new SingleThreadedMatchingEngine(eventListener,latencyRecorder);
+        MatchingEngine engine = new SingleThreadedMatchingEngine(eventListener,latencyRecorder, tracker);
 //        EventRecorder recorder = new EventRecorder();
 //        engine.setEventListener(recorder);
 
@@ -26,7 +28,7 @@ public class Application {
         WorkloadGenerator workload = new RandomWorkloadGenerator(profile, engine);
 
         long start = System.nanoTime();
-        workload.generate();
+        workload.generate(true);
         long end = System.nanoTime();
 
 

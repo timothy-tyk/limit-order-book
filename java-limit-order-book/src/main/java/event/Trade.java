@@ -26,4 +26,16 @@ public final class Trade implements Event{
     public long commandSequence() {
         return commandSequence;
     }
+
+    public long getBuyOrderId() {
+        return buyOrderId;
+    }
+
+    public long getSellOrderId() {
+        return sellOrderId;
+    }
+
+    public long getQuantity() {
+        return quantity;
+    }
 }

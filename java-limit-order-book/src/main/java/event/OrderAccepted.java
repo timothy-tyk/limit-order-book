@@ -28,4 +28,12 @@ public final class OrderAccepted implements Event{
     public long commandSequence() {
         return commandSequence;
     }
+
+    public long getOrderId() {
+        return orderId;
+    }
+
+    public long getQuantity() {
+        return quantity;
+    }
 }

@@ -6,6 +6,7 @@ import command.*;
 import core.OrderBook;
 import core.Side;
 import event.*;
+import utils.LiveOrderTracker;
 import validation.OrderRejectedReason;
 
 import java.util.ArrayDeque;
@@ -17,17 +18,24 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     private final EventListener eventListener;
     private long nextEventSequence = 1;
     private LatencyRecorder latencyRecorder;
+    private LiveOrderTracker liveOrderTracker;
 
 
-    public SingleThreadedMatchingEngine(EventListener eventListener, LatencyRecorder recorder) {
+    public SingleThreadedMatchingEngine(EventListener eventListener, LatencyRecorder recorder, LiveOrderTracker liveOrderTracker) {
         this.orderBook = new OrderBook();
         this.eventListener = eventListener;
-        this. latencyRecorder = recorder;
+        this.latencyRecorder = recorder;
+        this.liveOrderTracker = liveOrderTracker;
     }
 
     @Override
     public OrderBook getOrderBook() {
         return orderBook;
+    }
+
+    @Override
+    public LiveOrderTracker getLiveOrderTracker(){
+        return liveOrderTracker;
     }
 
     @Override
@@ -184,41 +192,63 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
     void emitOrderAccepted(long commandSequence, long orderId, Side side ,long price, long quantity){
         OrderAccepted orderAccepted = new OrderAccepted(nextEventSequence++,commandSequence,orderId,side,price,quantity);
         eventListener.onEvent(orderAccepted);
+        liveOrderTracker.onEvent(orderAccepted);
     }
 
     void emitOrderModified(long commandSequence, long orderId, Side newSide ,long newPrice, long newQuantity){
         OrderModified orderModified = new OrderModified(nextEventSequence++,commandSequence,orderId,newSide,newPrice,newQuantity);
         eventListener.onEvent(orderModified);
+        liveOrderTracker.onEvent(orderModified);
     }
 
     void emitOrderCancelled(long commandSequence, long orderId){
         OrderCancelled orderCancelled = new OrderCancelled(nextEventSequence++,commandSequence, orderId);
         eventListener.onEvent(orderCancelled);
+        liveOrderTracker.onEvent(orderCancelled);
     }
 
     void emitOrderRejected(long commandSequence, long orderId, OrderRejectedReason reason){
         OrderRejected orderRejected = new OrderRejected(nextEventSequence++,commandSequence, orderId, reason);
         eventListener.onEvent(orderRejected);
+        liveOrderTracker.onEvent(orderRejected);
     }
 
     void emitMarketOrderAccepted(long commandSequence, long orderId, Side side , long quantity){
         MarketOrderAccepted marketOrderAccepted = new MarketOrderAccepted(nextEventSequence++,commandSequence,orderId,side,quantity);
         eventListener.onEvent(marketOrderAccepted);
+        liveOrderTracker.onEvent(marketOrderAccepted);
     }
     void emitMarketOrderRejected(long commandSequence, long orderId, OrderRejectedReason reason){
         MarketOrderRejected marketOrderRejected = new MarketOrderRejected(nextEventSequence++,commandSequence,orderId, reason);
         eventListener.onEvent(marketOrderRejected);
+        liveOrderTracker.onEvent(marketOrderRejected);
     }
 
     void emitTradeEvent(long nextEventSequence, long commandSequence, long buyOrderId, long sellOrderId, long price, long quantity){
         Trade tradeEvent = new Trade(nextEventSequence,commandSequence,buyOrderId,sellOrderId,price,quantity);
         eventListener.onEvent(tradeEvent);
+        liveOrderTracker.onEvent(tradeEvent);
     }
 
     @Override
-    public void showEventSummary(WorkloadProfile profile){
-        System.out.println(profile.getName());
+    public void showProfileSummary(WorkloadProfile profile){
+        StringBuilder sb = new StringBuilder();
+        sb.append("Profile: "+profile.getName()+"\n");
+        sb.append("Seed: "+profile.getSeed()+"\n");
+        sb.append("Commands: "+profile.getCommandCount()+"\n");
+        sb.append("Warmup Runs: 3\n");
+//        sb.append("Measured Runs: 5\n");
+        System.out.println(sb.toString());
+    }
+
+    @Override
+    public void showEventSummary(){
         System.out.println(eventListener.summary());
         System.out.println();
+    }
+
+    @Override
+    public void showLatencySummary(){
+        System.out.println(latencyRecorder.latencySummary());
     }
 }

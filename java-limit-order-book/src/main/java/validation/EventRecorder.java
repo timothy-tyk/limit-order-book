@@ -97,31 +97,20 @@ public class EventRecorder implements EventListener {
     @Override
     public String summary(){
         StringBuffer sb = new StringBuffer();
-        sb.append("Orders Accepted: "+getOrderAcceptedCount());
-        sb.append("\n");
-        sb.append("Orders Modified: "+getOrderModifiedCount());
-        sb.append("\n");
-        sb.append("Orders Cancelled: "+getOrderCancelledCount());
-        sb.append("\n");
-        sb.append("Orders Rejected: "+getOrderRejectedCount());
-        sb.append("\n");
-        sb.append("Rejection Reason: UNKNOWN_ORDER | "+orderRejected_UnknownOrderCount);
-        sb.append("\n");
-        sb.append("Rejection Reason: DUPLICATED_ORDER_ID | "+orderRejected_DuplicatedOrderIdCount);
-        sb.append("\n");
-        sb.append("Rejection Reason: INVALID_PRICE | "+orderRejected_InvalidPriceCount);
-        sb.append("\n");
-        sb.append("Rejection Reason: INVALID_QTY | "+orderRejected_InvalidQtyCount);
-        sb.append("\n");
-        sb.append("Rejection Reason: NO_LIQUIDITY | "+orderRejected_NoLiquidityCount);
-        sb.append("\n");
-        sb.append("Market Orders Accepted: "+getMarketOrderAcceptedCount());
-        sb.append("\n");
-        sb.append("Market Orders Rejected: "+getMarketOrderRejectedCount());
-        sb.append("\n");
-        sb.append("Total Trades: "+getTradeCount());
-        sb.append("\n");
-        sb.append("Last Event Sequence: "+lastEventSequence);
+        sb.append("Events:\n");
+        sb.append("   Orders Accepted: "+getOrderAcceptedCount()+"\n");
+        sb.append("   Orders Modified: "+getOrderModifiedCount()+"\n");
+        sb.append("   Orders Cancelled: "+getOrderCancelledCount()+"\n");
+        sb.append("   Orders Rejected: "+getOrderRejectedCount()+"\n");
+        sb.append("   Rejection Reason: UNKNOWN_ORDER | "+orderRejected_UnknownOrderCount+"\n");
+        sb.append("   Rejection Reason: DUPLICATED_ORDER_ID | "+orderRejected_DuplicatedOrderIdCount+"\n");
+        sb.append("   Rejection Reason: INVALID_PRICE | "+orderRejected_InvalidPriceCount+"\n");
+        sb.append("   Rejection Reason: INVALID_QTY | "+orderRejected_InvalidQtyCount+"\n");
+        sb.append("   Rejection Reason: NO_LIQUIDITY | "+orderRejected_NoLiquidityCount+"\n");
+        sb.append("   Market Orders Accepted: "+getMarketOrderAcceptedCount()+"\n");
+        sb.append("   Market Orders Rejected: "+getMarketOrderRejectedCount()+"\n");
+        sb.append("   Total Trades: "+getTradeCount()+"\n");
+        sb.append("   Last Event Sequence: "+lastEventSequence+"\n");
         return sb.toString();
     }
 }

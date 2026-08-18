@@ -11,6 +11,7 @@ import core.Side;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import utils.LiveOrderTracker;
 import validation.EventRecorder;
 
 import java.beans.PropertyEditorManager;
@@ -23,7 +24,7 @@ public class SingleThreadedMatchingEngineTest {
 
     @Before
     public void setup(){
-        engine = new SingleThreadedMatchingEngine(new EventRecorder(true), new LatencyRecorder(1000));
+        engine = new SingleThreadedMatchingEngine(new EventRecorder(true), new LatencyRecorder(1000), new LiveOrderTracker());
         orderBook = engine.getOrderBook();
     }
 

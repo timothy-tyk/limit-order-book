@@ -4,24 +4,26 @@ import benchmark.WorkloadProfile;
 import command.*;
 import core.Side;
 import engine.MatchingEngine;
+import utils.LiveOrderTracker;
 
 import java.util.*;
 
 public final class RandomWorkloadGenerator implements WorkloadGenerator{
     private final WorkloadProfile profile;
     private final MatchingEngine engine;
+    private LiveOrderTracker tracker;
 
     public RandomWorkloadGenerator(WorkloadProfile profile, MatchingEngine engine) {
         this.profile = profile;
         this.engine = engine;
+        this.tracker = engine.getLiveOrderTracker();
     }
 
     @Override
-    public long generate(){
+    public void generate(boolean measuredRun){
         Random random = new Random(profile.getSeed());
         long commandCount = profile.getCommandCount();
 
-        List<Long> liveOrderIds = new ArrayList<>();
         long nextOrderId = 1;
         long sequence = 1;
 
@@ -32,8 +34,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
 
             int action = random.nextInt(100);
 
-            if(action< profile.getAddPercent() || liveOrderIds.isEmpty()){
-//                System.out.println("AddLimitOrderCommand - "+sequence+" "+nextOrderId);
+            if(action< profile.getAddPercent() || !tracker.hasLiveOrders()){
 //              Add Limit Order (70%)
                 Side side = random.nextBoolean()?Side.BUY:Side.SELL;
                 long priceOffset = random.nextInt(20)-10;
@@ -51,17 +52,14 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                             qty
                     );
                 }
-                liveOrderIds.addLast(nextOrderId);
                 nextOrderId++;
-            }else if(action<profile.getCancelPercent()){
-//                System.out.println("CancelOrderCommand - "+sequence+" "+nextOrderId);
+            }else if(action<100-profile.getCancelPercent()){
 //              Cancel Limit Order (20%)
-                long orderIdToRemove = removeRandomLiveOrderId(random, liveOrderIds);
+                long orderIdToRemove = tracker.randomLiveOrderId(random);
                 command = new CancelOrderCommand(sequence, orderIdToRemove);
             }else{
-//                System.out.println("ModifyOrderCommand - "+sequence+" "+nextOrderId);
 //              Modify Limit Order (10%)
-                long orderIdToRemove = removeRandomLiveOrderId(random, liveOrderIds);
+                long orderIdToRemove = tracker.randomLiveOrderId(random);
                 Side newSide = random.nextBoolean()?Side.BUY:Side.SELL;
                 long priceOffset = random.nextInt(20)-10;
                 long newPrice = basePrice+priceOffset;
@@ -73,9 +71,13 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
             engine.submitCommand(command);
             sequence++;
         }
+        if(measuredRun) {
+            System.out.println("================");
+            engine.showProfileSummary(profile);
+            engine.showLatencySummary();
+            engine.showEventSummary();
+        }
 
-        engine.showEventSummary(profile);
-        return liveOrderIds.size();
     }
 
     private long removeRandomLiveOrderId(Random random, List<Long> liveOrderIds){
@@ -91,7 +93,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
 //            liveOrderIds.remove(index); //O(n) - shifts
 //        }
 
-//        SWAP WITH LAST PATTERN (200ms!!):
+//        SWAP-WITH-LAST PATTERN (200ms!!):
         int index = random.nextInt(liveOrderIds.size());
         int lastIndex = liveOrderIds.size()-1;
         long orderId = liveOrderIds.get(index);

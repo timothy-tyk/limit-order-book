@@ -1,8 +1,10 @@
 package engine;
 
+import benchmark.LatencyRecorder;
 import benchmark.WorkloadProfile;
 import command.Command;
 import core.OrderBook;
+import utils.LiveOrderTracker;
 
 public interface MatchingEngine {
     void start();
@@ -15,5 +17,10 @@ public interface MatchingEngine {
 
     OrderBook getOrderBook();
 
-    void showEventSummary(WorkloadProfile profile);
+    LiveOrderTracker getLiveOrderTracker();
+
+    void showProfileSummary(WorkloadProfile profile);
+    void showLatencySummary();
+
+    void showEventSummary();
 }

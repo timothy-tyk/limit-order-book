@@ -75,20 +75,13 @@ public final class LatencyRecorder {
      */
     public String latencySummary(){
         StringBuilder sb = new StringBuilder();
-        sb.append("=== Latency Recordings ===");
-        sb.append("\n");
-        sb.append("p50: "+percentile(50)+"us");
-        sb.append("\n");
-        sb.append("p90: "+percentile(90)+"us");
-        sb.append("\n");
-        sb.append("p99: "+percentile(99)+"us");
-        sb.append("\n");
-        sb.append("p99.9: "+percentile(99.9)+"us");
-        sb.append("\n");
-        sb.append("max: "+max()+"us");
-        sb.append("\n");
-        sb.append("avg: "+averageNanos()+"us");
-        sb.append("\n");
+        sb.append("Latency:"+"\n");
+        sb.append("    p50: "+percentile(50)+"ns"+"\n");
+        sb.append("    p90: "+percentile(90)+"ns"+"\n");
+        sb.append("    p99: "+percentile(99)+"ns"+"\n");
+        sb.append("    p99.9: "+percentile(99.9)+"ns"+"\n");
+        sb.append("    max: "+max()+"ns"+"\n");
+        sb.append("    avg: "+averageNanos()+"ns"+"\n");
         return sb.toString();
     }
 }

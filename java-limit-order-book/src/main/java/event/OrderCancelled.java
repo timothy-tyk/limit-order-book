@@ -22,4 +22,8 @@ public final class OrderCancelled implements Event{
     public long commandSequence() {
         return commandSequence;
     }
+
+    public long getOrderId() {
+        return orderId;
+    }
 }

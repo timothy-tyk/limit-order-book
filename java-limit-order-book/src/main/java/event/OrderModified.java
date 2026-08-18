@@ -28,4 +28,12 @@ public final class OrderModified implements Event{
     public long commandSequence() {
         return commandSequence;
     }
+
+    public long getOrderId() {
+        return orderId;
+    }
+
+    public long getNewQuantity() {
+        return newQuantity;
+    }
 }
