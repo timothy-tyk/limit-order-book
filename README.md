@@ -72,3 +72,33 @@ FOLDER-STRUCTURE
 └── README.md
 
 ```
+
+Milestone 1:
+Single-threaded order book
+
+Milestone 2:
+Event-driven engine
+
+Milestone 3:
+Benchmark baseline and live-order-aware workload
+
+Milestone 4:
+Locked concurrent engine
+
+Milestone 5:
+Single-writer queue engine
+
+Milestone 6:
+Ring buffer / low-latency engine
+
+Milestone 7:
+Multi-symbol engine
+
+Milestone 8:
+Market data / analytics consumer
+
+Milestone 9:
+Persistence / replay / recovery
+
+Milestone 10:
+Low-latency optimization and profiling

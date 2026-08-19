@@ -12,7 +12,7 @@ import validation.OrderRejectedReason;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-public class SingleThreadedMatchingEngine implements MatchingEngine {
+public final class SingleThreadedMatchingEngine implements MatchingEngine {
     private long lastProcessedSequence = 0;
     private OrderBook orderBook;
     private final EventListener eventListener;
@@ -116,7 +116,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
 //        long addEnd = System.nanoTime();
     }
 
-    void cancelLimitOrder(CancelOrderCommand cmd){
+    public void cancelLimitOrder(CancelOrderCommand cmd){
         /**
          * Given an order ID:
          *
@@ -138,7 +138,7 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
 //        long cancelEnd = System.nanoTime();
 //        System.out.println("Cancel: "+ (cancelEnd-cancelStart));
     }
-    void modifyLimitOrder(ModifyOrderCommand cmd){
+    public void modifyLimitOrder(ModifyOrderCommand cmd){
         /**
          * 1. Find existing order by ID.
          * 2. Cancel/remove it.
