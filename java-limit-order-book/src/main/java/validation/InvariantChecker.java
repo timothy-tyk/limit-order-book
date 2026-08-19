@@ -61,8 +61,10 @@ public class InvariantChecker {
         }
 
 //        Best bid price < best ask price.
-        if(orderBook.getBids().firstKey()>=orderBook.getAsks().firstKey()){
-            System.out.println("Best bid price > best ask price");
+        if(!orderBook.getBids().isEmpty() && !orderBook.getAsks().isEmpty()){
+            if(orderBook.getBids().firstKey()>=orderBook.getAsks().firstKey()) {
+                System.out.println("Best bid price > best ask price");
+            }
         }
 
 //        All orders in the ID map exist in the book.

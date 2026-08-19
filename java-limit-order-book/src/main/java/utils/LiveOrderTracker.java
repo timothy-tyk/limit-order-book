@@ -58,7 +58,7 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
         }
         liveOrderIds.add(orderId);
         remainingQtyById.put(orderId,qty);
-        indexById.put(orderId,liveOrderIds.size());
+        indexById.put(orderId,liveOrderIds.size()-1);
     }
 
     private void handleTrade(long buyOrderId, long sellOrderId, long qty){
@@ -86,7 +86,7 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
             int index = indexById.remove(orderId);
 
             //swap-with-last
-            int lastIndex = liveOrderIds.size() - 1;
+            int lastIndex = liveOrderIds.size()-1;
             if (index < lastIndex) {
                 long lastOrderId = liveOrderIds.get(lastIndex);
                 liveOrderIds.set(index, lastOrderId);
@@ -96,10 +96,12 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
         }
     }
 
-
     private void handleUpdate(OrderModified e){
         remove(e.getOrderId());
         add(e.getOrderId(), e.getNewQuantity());
+        //TODO: handle the new trade (if any)
+
+
     }
 
     private void handleMarketOrderAccepted(){

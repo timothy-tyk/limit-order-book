@@ -97,7 +97,6 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          *        rest the order on the appropriate side.
          */
 //        long addStart = System.nanoTime();
-        long remainingRequestQty=cmd.getQuantity();
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.getOrderId())){
             emitOrderAccepted(cmd.sequence(),cmd.getOrderId(), cmd.getSide(),cmd.getPrice(),cmd.getQuantity());
             Queue<TradeDTO> tradeDTOs;
@@ -115,7 +114,6 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
             else if(!orderBook.validateOrderExists(cmd.getOrderId())) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.UNKNOWN_ORDER);
         }
 //        long addEnd = System.nanoTime();
-//        System.out.println("Add: "+ (addEnd-addStart));
     }
 
     void cancelLimitOrder(CancelOrderCommand cmd){
@@ -147,11 +145,15 @@ public class SingleThreadedMatchingEngine implements MatchingEngine {
          * 3. Add a new order using the new price/quantity.
          */
 //        long modifyStart = System.nanoTime();
+        Queue<TradeDTO> tradeDTOs;
         long orderIdToModify = cmd.getOrderId();
         if(orderBook.validateOrderExists(orderIdToModify)){
 
             emitOrderModified(cmd.sequence(),orderIdToModify,cmd.getSide(),cmd.getNewPrice(),cmd.getNewQuantity());
-            orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity(), cmd.getOrderId());
+            tradeDTOs = orderBook.modifyOrder(orderIdToModify, cmd.getSide(), cmd.getNewPrice(), cmd.getNewQuantity(), cmd.getOrderId());
+            for(TradeDTO tradeDTO: tradeDTOs){
+                emitTradeEvent(nextEventSequence++,cmd.sequence(), tradeDTO.getBuyOrderId(), tradeDTO.getSellOrderId(), tradeDTO.getPrice(), tradeDTO.getQuantity());
+            }
         }else{
             if(cmd.getNewPrice()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_PRICE);
             else if(cmd.getNewQuantity()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_QTY);

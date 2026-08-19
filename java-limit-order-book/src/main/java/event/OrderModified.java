@@ -36,4 +36,12 @@ public final class OrderModified implements Event{
     public long getNewQuantity() {
         return newQuantity;
     }
+
+    public Side getNewSide() {
+        return newSide;
+    }
+
+    public long getNewPrice() {
+        return newPrice;
+    }
 }
