@@ -20,7 +20,7 @@ public class ConcurrentWorkloadRunner {
         LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
         LiveOrderTracker liveOrderTracker = new LiveOrderTracker();
         SynchronizedMatchingEngine synchronizedMatchingEngine = new SynchronizedMatchingEngine(eventListener, latencyRecorder, liveOrderTracker);
-//        ReentrantLockMatchingEngine reentrantLockMatchingEngine = new ReentrantLockMatchingEngine(eventListener, latencyRecorder, liveOrderTracker);
+        ReentrantLockMatchingEngine reentrantLockMatchingEngine = new ReentrantLockMatchingEngine(eventListener, latencyRecorder, liveOrderTracker);
 
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch ready = new CountDownLatch(threadCount);
