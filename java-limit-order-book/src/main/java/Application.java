@@ -36,7 +36,7 @@ public class Application {
 //        System.out.println("Events produced: " + recorder.size());
         System.out.println("Elapsed ms: " + (end - start) / 1_000_000);
 
-        System.out.println(latencyRecorder.latencySummary());
+//        System.out.println(latencyRecorder.latencySummary());
 
         InvariantChecker.check(engine);
 //        InvariantChecker.check(recorder.events());

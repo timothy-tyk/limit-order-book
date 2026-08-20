@@ -4,10 +4,13 @@ import benchmark.LatencyRecorder;
 import benchmark.WorkloadProfile;
 import command.*;
 import core.OrderBook;
+import core.Side;
 import engine.MatchingEngine;
 import engine.SingleThreadedMatchingEngine;
 import event.EventListener;
 import utils.LiveOrderTracker;
+
+import java.util.Random;
 
 public final class SynchronizedMatchingEngine implements MatchingEngine {
     private final SingleThreadedMatchingEngine engine;
@@ -34,6 +37,29 @@ public final class SynchronizedMatchingEngine implements MatchingEngine {
     @Override
     public synchronized void submitCommand(Command command) {
         engine.submitCommand(command);
+    }
+
+    public synchronized void submitRandomCancel(long sequence, Random random){
+        if(!engine.getLiveOrderTracker().hasLiveOrders()) return;
+        long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
+        CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence, orderIdToCancel);
+    }
+
+    public synchronized void submitRandomModify(long sequence, Random random, long basePrice){
+        if(!engine.getLiveOrderTracker().hasLiveOrders()) return;
+        long orderIdToModify = engine.getLiveOrderTracker().randomLiveOrderId(random);
+        Side newSide = random.nextBoolean() ? Side.BUY : Side.SELL;
+        long priceOffset = random.nextInt(20) - 10;
+        long newPrice = basePrice + priceOffset;
+        long newQty = random.nextInt(100) + 1;
+        ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(
+                sequence,
+                orderIdToModify,
+                newSide,
+                newPrice,
+                newQty
+        );
+        engine.submitCommand(modifyOrderCommand);
     }
 
     @Override
