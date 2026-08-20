@@ -7,6 +7,7 @@ import engine.concurrent.SynchronizedMatchingEngine;
 import event.EventListener;
 import utils.LiveOrderTracker;
 import validation.EventRecorder;
+import validation.InvariantChecker;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +28,7 @@ public class ConcurrentWorkloadRunner {
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch done = new CountDownLatch(threadCount);
 
-        WorkerCommandGenerator workerCommandGenerator = new WorkerCommandGenerator(profile, synchronizedMatchingEngine);
+        WorkerCommandGenerator workerCommandGenerator = new WorkerCommandGenerator(profile, reentrantLockMatchingEngine);
 
         for(int i=0;i<threadCount;i++){
             int threadId = i;
@@ -63,6 +64,7 @@ public class ConcurrentWorkloadRunner {
         );
         System.out.println(eventListener.summary());
         System.out.println(latencyRecorder.latencySummary());
-        System.out.println(synchronizedMatchingEngine.getLiveOrderTracker().summary());
+        System.out.println(reentrantLockMatchingEngine.getLiveOrderTracker().summary());
+        InvariantChecker.check(reentrantLockMatchingEngine);
     }
 }

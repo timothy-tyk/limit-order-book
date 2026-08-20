@@ -1,6 +1,8 @@
 package benchmark;
 
 import concurrency.ConcurrentWorkloadRunner;
+import validation.InvariantChecker;
+
 import java.util.List;
 
 public class ConcurrentBenchmarkRunner {
