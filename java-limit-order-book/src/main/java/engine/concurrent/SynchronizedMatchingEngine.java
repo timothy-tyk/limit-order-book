@@ -12,7 +12,7 @@ import utils.LiveOrderTracker;
 
 import java.util.Random;
 
-public final class SynchronizedMatchingEngine implements MatchingEngine {
+public final class SynchronizedMatchingEngine implements MatchingEngine, ConcurrentMatchingEngine {
     private final SingleThreadedMatchingEngine engine;
 
     public SynchronizedMatchingEngine(EventListener eventListener, LatencyRecorder latencyRecorder, LiveOrderTracker liveOrderTracker) {
@@ -39,12 +39,15 @@ public final class SynchronizedMatchingEngine implements MatchingEngine {
         engine.submitCommand(command);
     }
 
+    @Override
     public synchronized void submitRandomCancel(long sequence, Random random){
         if(!engine.getLiveOrderTracker().hasLiveOrders()) return;
         long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
         CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence, orderIdToCancel);
+        engine.submitCommand(cancelOrderCommand);
     }
 
+    @Override
     public synchronized void submitRandomModify(long sequence, Random random, long basePrice){
         if(!engine.getLiveOrderTracker().hasLiveOrders()) return;
         long orderIdToModify = engine.getLiveOrderTracker().randomLiveOrderId(random);

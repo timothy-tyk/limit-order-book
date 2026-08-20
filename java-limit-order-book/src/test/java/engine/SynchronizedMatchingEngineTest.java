@@ -1,6 +1,7 @@
 package engine;
 
 import benchmark.LatencyRecorder;
+import benchmark.WorkloadProfile;
 import command.AddLimitOrderCommand;
 import command.CancelOrderCommand;
 import command.MarketOrderCommand;
@@ -16,6 +17,8 @@ import utils.LiveOrderTracker;
 import validation.EventRecorder;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Random;
 
 public class SynchronizedMatchingEngineTest {
     SynchronizedMatchingEngine engine;
@@ -243,6 +246,28 @@ public class SynchronizedMatchingEngineTest {
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrderCount(),1);
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getTotalQuantity(),32);
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrders().pollFirstEntry().getValue().getOrderId(),5);
+    }
+
+    @Test
+    public void sanityTest3(){
+        Random random = new Random(1);
+        long price = 99997L;
+        AddLimitOrderCommand com1 = new AddLimitOrderCommand(1,1,Side.BUY,price,93);
+        AddLimitOrderCommand com2 = new AddLimitOrderCommand(2,2,Side.BUY,99998L,12);
+        AddLimitOrderCommand com3 = new AddLimitOrderCommand(3,3,Side.BUY,price,58);
+        AddLimitOrderCommand com5 = new AddLimitOrderCommand(5,4,Side.BUY,100007L,50);
+        AddLimitOrderCommand com6 = new AddLimitOrderCommand(6,5,Side.BUY,100005L,40);
+
+        engine.submitCommand(com1);
+        engine.submitCommand(com2);
+        engine.submitCommand(com3);
+        engine.submitCommand(com5);
+        engine.submitCommand(com6);
+        engine.submitRandomCancel(7, random);
+        Assert.assertEquals(engine.getOrderBook().getOrdersById().size(),4);
+        Map<Long, Order> ordersSnapshot = Map.copyOf(engine.getOrderBook().getOrdersById());
+        engine.submitRandomModify(8,random,price);
+        Assert.assertNotEquals(ordersSnapshot, engine.getOrderBook().getOrdersById());
     }
 
 }

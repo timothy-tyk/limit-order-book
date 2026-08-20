@@ -2,7 +2,6 @@ package workload;
 
 import benchmark.LatencyRecorder;
 import benchmark.WorkloadProfile;
-import core.OrderBook;
 import engine.SingleThreadedMatchingEngine;
 import org.junit.Assert;
 import org.junit.Before;
