@@ -21,10 +21,10 @@ import java.util.concurrent.Executors;
 public class SingleWriterBenchmarkRunner {
     public static void main() throws InterruptedException {
         List<WorkloadProfile> workloadProfiles = List.of(
-//                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
-//                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
-                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 25, 25, 15)
-//                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15)
+                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
+                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
+                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 25, 25, 15),
+                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15)
         );
 
         int[] threads = {1,2,4,8};
@@ -43,7 +43,6 @@ public class SingleWriterBenchmarkRunner {
         EventListener eventRecorder = new EventRecorder(false);
         LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
         LiveOrderTracker tracker = new LiveOrderTracker();
-//        SynchronizedMatchingEngine synchronizedMatchingEngine = new SynchronizedMatchingEngine(eventRecorder,latencyRecorder,tracker);
         SingleWriterMatchingEngine singleWriterMatchingEngine = new SingleWriterMatchingEngine(eventRecorder,latencyRecorder,tracker,65_316);
 
         CountDownLatch ready = new CountDownLatch(threadCount);
@@ -59,13 +58,13 @@ public class SingleWriterBenchmarkRunner {
                     //gets threads ready first
                     ready.countDown();
                     start.await();
-//                    runThread(threadId, synchronizedMatchingEngine, commandsPerThread,profile);
                     runThread(threadId, singleWriterMatchingEngine, commandsPerThread, profile);
-
-                    done.countDown();
                 }
                 catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                }finally{
+//                  countdown in finally-block to prevent stalling when runThread(...) throws error
+                    done.countDown();
                 }
             });
 
@@ -112,7 +111,6 @@ public class SingleWriterBenchmarkRunner {
                 } else {
                     price = basePrice + (random.nextInt(50) + 1);   // 100,001 to 100,050
                 }
-//                long priceOffset = random.nextInt(20) - 10;
                 long qty = random.nextInt(100) + 1;
                 AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
                         sequence++,
@@ -124,6 +122,7 @@ public class SingleWriterBenchmarkRunner {
                 command = addLimitOrderCommand;
                 engine.submitCommand(command);
             } else if (action <= profile.addPercent + profile.cancelPercent) {
+                if(!engine.getLiveOrderTracker().hasLiveOrders()) continue; //guard cancel against no-live-order scenario
                 long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
                 CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,orderIdToCancel);
                 command = cancelOrderCommand;
@@ -132,6 +131,7 @@ public class SingleWriterBenchmarkRunner {
 //                TODO: Should producer or consumer thread decide which order to remove?
 
             } else {
+                if(!engine.getLiveOrderTracker().hasLiveOrders()) continue; //guard modify against no-live-order scenario
                 long orderIdToModify = engine.getLiveOrderTracker().randomLiveOrderId(random);
                 Side newSide = random.nextBoolean() ? Side.BUY : Side.SELL;
                 long priceOffset = random.nextInt(20) - 10;

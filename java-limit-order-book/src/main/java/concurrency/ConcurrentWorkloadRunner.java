@@ -39,9 +39,11 @@ public class ConcurrentWorkloadRunner {
                     //dont start yet until all threads are ready and timer is ticking
                     start.await();
                     workerCommandGenerator.generate(threadId, threadCount, false);
-                    done.countDown();
+//                    done.countDown();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                } finally{
+                    done.countDown();
                 }
             });
         }
