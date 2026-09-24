@@ -1,7 +1,9 @@
 package benchmark;
 
 import command.AddLimitOrderCommand;
+import command.CancelOrderCommand;
 import command.Command;
+import command.ModifyOrderCommand;
 import core.Side;
 import engine.MatchingEngine;
 import engine.concurrent.SynchronizedMatchingEngine;
@@ -19,12 +21,15 @@ import java.util.concurrent.Executors;
 public class SingleWriterBenchmarkRunner {
     public static void main() throws InterruptedException {
         List<WorkloadProfile> workloadProfiles = List.of(
-                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
-                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15)
+//                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
+//                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
+                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 25, 25, 15)
+//                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15)
         );
 
         int[] threads = {1,2,4,8};
         for(WorkloadProfile profile: workloadProfiles){
+            System.out.printf("%s | %s | %s \n",profile.getName(), profile.getCommandCount(), profile.getSeed());
             for(int threadCount: threads){
                 runMultithreaded(threadCount, profile);
             }
@@ -32,7 +37,7 @@ public class SingleWriterBenchmarkRunner {
     }
 
     private static void runMultithreaded(int threadCount, WorkloadProfile profile) throws InterruptedException {
-        long commandCount = 1_000_000;
+        long commandCount = profile.getCommandCount();
         long commandsPerThread = commandCount/threadCount;
 
         EventListener eventRecorder = new EventRecorder(false);
@@ -101,29 +106,43 @@ public class SingleWriterBenchmarkRunner {
             int action = random.nextInt(100);
             if (action < profile.addPercent || !engine.getLiveOrderTracker().hasLiveOrders()) {
                 Side side = random.nextBoolean() ? Side.BUY : Side.SELL;
-                long priceOffset = random.nextInt(20) - 10;
+                long price;
+                if (side == Side.BUY) {
+                    price = basePrice - (random.nextInt(50) + 1);   // 99,950 to 99,999
+                } else {
+                    price = basePrice + (random.nextInt(50) + 1);   // 100,001 to 100,050
+                }
+//                long priceOffset = random.nextInt(20) - 10;
                 long qty = random.nextInt(100) + 1;
                 AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
                         sequence++,
                         orderId++,
                         side,
-                        basePrice - priceOffset,
+                        price,
                         qty
                 );
                 command = addLimitOrderCommand;
                 engine.submitCommand(command);
             } else if (action <= profile.addPercent + profile.cancelPercent) {
-//                TOCTOU = Time of Check, Time of Use:
-//                2 threads may pick the same orderIdToRemove at the same time, but only 1 thread can remove it,
-//                the other thread will have its order rejected : Unknown_Order
+                long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
+                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,orderIdToCancel);
+                command = cancelOrderCommand;
+                engine.submitCommand(command);
 
-//                Fix: Created synchronized method to pick random ID + submit command due to TOCTOU race condition
-//                engine.submitRandomCancel(sequence++,random);
+//                TODO: Should producer or consumer thread decide which order to remove?
+
             } else {
-//                Created synchronized method to pick random ID + submit command due to TOCTOU race condition
-//                engine.submitRandomModify(sequence++,random, basePrice);
+                long orderIdToModify = engine.getLiveOrderTracker().randomLiveOrderId(random);
+                Side newSide = random.nextBoolean() ? Side.BUY : Side.SELL;
+                long priceOffset = random.nextInt(20) - 10;
+                long newPrice = basePrice - priceOffset;
+                long newQty = random.nextInt(100) + 1;
+                ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(sequence++,orderIdToModify, newSide, newPrice, newQty);
+                engine.submitCommand(modifyOrderCommand);
             }
 
         }
     }
+
+
 }

@@ -22,17 +22,18 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
     }
 
     @Override
-    public long randomLiveOrderId(Random random) {
+    public synchronized long randomLiveOrderId(Random random) {
         if(!hasLiveOrders()) throw new IllegalStateException("No new live orders available");
         else{
             int randomIndex = random.nextInt(liveOrderIds.size());
-            return liveOrderIds.get(randomIndex);
+            long orderIdToRemove = liveOrderIds.get(randomIndex);
+            return orderIdToRemove;
         }
     }
 
 
     @Override
-    public void onEvent(Event event) {
+    public synchronized void onEvent(Event event) {
         switch (event){
             case OrderAccepted e -> add(e.getOrderId(), e.getQuantity());
             case Trade e -> handleTrade(e.getBuyOrderId(), e.getSellOrderId(), e.getQuantity());
@@ -49,7 +50,7 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
         return "";
     }
 
-    private void add(long orderId, long qty){
+    private synchronized void add(long orderId, long qty){
         if(remainingQtyById.containsKey(orderId)){
             remainingQtyById.put(orderId,qty);
             return;
@@ -59,12 +60,12 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
         indexById.put(orderId,liveOrderIds.size()-1);
     }
 
-    private void handleTrade(long buyOrderId, long sellOrderId, long qty){
+    private synchronized void handleTrade(long buyOrderId, long sellOrderId, long qty){
         reduce(buyOrderId, qty);
         reduce(sellOrderId, qty);
     }
 
-    private void reduce(long orderId, long qty){
+    private synchronized void reduce(long orderId, long qty){
         if(remainingQtyById.containsKey(orderId)){
             long orderQty = remainingQtyById.get(orderId);
 
@@ -78,7 +79,7 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
         }
     }
 
-    private void remove(long orderId){
+    private synchronized void remove(long orderId){
         if(remainingQtyById.containsKey(orderId)) {
             remainingQtyById.remove(orderId);
             int index = indexById.remove(orderId);
@@ -94,7 +95,7 @@ public class LiveOrderTracker implements LiveOrderIdSource, EventListener {
         }
     }
 
-    private void handleUpdate(OrderModified e){
+    private synchronized void handleUpdate(OrderModified e){
         remove(e.getOrderId());
         add(e.getOrderId(), e.getNewQuantity());
         //TODO: handle the new trade (if any)

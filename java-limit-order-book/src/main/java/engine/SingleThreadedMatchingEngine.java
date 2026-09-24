@@ -55,7 +55,6 @@ public final class SingleThreadedMatchingEngine implements MatchingEngine {
 
     @Override
     public void submitCommand(Command command){
-        // TODO: switch case for each command type
         long latencyStart = System.nanoTime();
         switch(command){
             case AddLimitOrderCommand cmd -> addLimitOrder(cmd);

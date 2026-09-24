@@ -2,6 +2,7 @@ package engine.singlewriter;
 
 import benchmark.LatencyRecorder;
 import benchmark.WorkloadProfile;
+import command.CancelOrderCommand;
 import command.Command;
 import core.OrderBook;
 import engine.MatchingEngine;
@@ -9,6 +10,7 @@ import engine.SingleThreadedMatchingEngine;
 import event.EventListener;
 import utils.LiveOrderTracker;
 
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +38,8 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
 
     public SingleWriterMatchingEngine(EventListener eventListener, LatencyRecorder latencyRecorder, LiveOrderTracker liveOrderTracker, int queueCapacity) {
         this.eventListener = eventListener;
-        this.latencyRecorder = new LatencyRecorder(10000);
-        this.liveOrderTracker = new LiveOrderTracker();
+        this.latencyRecorder = latencyRecorder;
+        this.liveOrderTracker = liveOrderTracker;
         this.queue = new ArrayBlockingQueue<>(queueCapacity);
         this.delegate = new SingleThreadedMatchingEngine(eventListener, latencyRecorder, liveOrderTracker);
         submittedCommands = new AtomicLong(0);
@@ -67,6 +69,7 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
         }
         delegate.stop();
 
+
     }
 
     private void runLoop() {
@@ -76,7 +79,8 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
                 if (command != null) {
                     delegate.submitCommand(command);
                     processedCommands.incrementAndGet();
-                } else {
+                }
+                else {
                     running = false;
                 }
             }
@@ -153,6 +157,12 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
 
     public AtomicLong getProcessedCommands() {
         return processedCommands;
+    }
+
+    public void cancelRandomOrder(long sequence, Random random){
+        long orderIdToCancel = liveOrderTracker.randomLiveOrderId(random);
+        CancelOrderCommand cmd = new CancelOrderCommand(sequence, orderIdToCancel);
+        delegate.submitCommand(cmd);
     }
 }
 
