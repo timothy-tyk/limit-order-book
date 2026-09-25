@@ -81,7 +81,7 @@ public class InvariantChecker {
             System.out.println("Orderbook order list contains more orders than the PriceLevel lists");
         }
 
-        System.out.println("Invariance Check Complete");
+        System.out.println("Invariance Check Complete\n");
     }
 
 }

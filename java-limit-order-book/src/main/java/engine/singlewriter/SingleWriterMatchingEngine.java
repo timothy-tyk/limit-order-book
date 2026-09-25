@@ -75,6 +75,7 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
     private void runLoop() {
         try {
             while (running || !queue.isEmpty()) {
+//              Consumes from the queue
                 Command command = queue.poll(10, TimeUnit.MILLISECONDS);
                 if (command != null) {
                     delegate.submitCommand(command);
@@ -99,6 +100,7 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
 
     @Override
     public void submitCommand(Command command) {
+//        Submits command to the queue
         if (!running) {
             throw new IllegalStateException("Engine is not running!");
         }
@@ -159,11 +161,11 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
         return processedCommands;
     }
 
-    public void cancelRandomOrder(long sequence, Random random){
-        long orderIdToCancel = liveOrderTracker.randomLiveOrderId(random);
-        CancelOrderCommand cmd = new CancelOrderCommand(sequence, orderIdToCancel);
-        delegate.submitCommand(cmd);
-    }
+//    public void cancelRandomOrder(long sequence, Random random){
+//        long orderIdToCancel = liveOrderTracker.randomLiveOrderId(random);
+//        CancelOrderCommand cmd = new CancelOrderCommand(sequence, orderIdToCancel);
+//        delegate.submitCommand(cmd);
+//    }
 }
 
 

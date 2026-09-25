@@ -95,7 +95,6 @@ public final class SingleThreadedMatchingEngine implements MatchingEngine {
          * 3. If quantity remains after matching:
          *        rest the order on the appropriate side.
          */
-//        long addStart = System.nanoTime();
         if(cmd.validateCommand() && !orderBook.validateOrderExists(cmd.getOrderId())){
             emitOrderAccepted(cmd.sequence(),cmd.getOrderId(), cmd.getSide(),cmd.getPrice(),cmd.getQuantity());
             Queue<TradeDTO> tradeDTOs;
@@ -112,7 +111,6 @@ public final class SingleThreadedMatchingEngine implements MatchingEngine {
             else if(cmd.getQuantity()<=0) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.INVALID_QTY);
             else if(!orderBook.validateOrderExists(cmd.getOrderId())) emitOrderRejected(cmd.sequence(),cmd.getOrderId(), OrderRejectedReason.UNKNOWN_ORDER);
         }
-//        long addEnd = System.nanoTime();
     }
 
     public void cancelLimitOrder(CancelOrderCommand cmd){

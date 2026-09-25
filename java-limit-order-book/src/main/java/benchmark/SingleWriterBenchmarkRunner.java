@@ -9,8 +9,10 @@ import engine.MatchingEngine;
 import engine.concurrent.SynchronizedMatchingEngine;
 import engine.singlewriter.SingleWriterMatchingEngine;
 import event.EventListener;
+import utils.Constants;
 import utils.LiveOrderTracker;
 import validation.EventRecorder;
+import validation.InvariantChecker;
 
 import java.util.List;
 import java.util.Random;
@@ -29,7 +31,7 @@ public class SingleWriterBenchmarkRunner {
 
         int[] threads = {1,2,4,8};
         for(WorkloadProfile profile: workloadProfiles){
-            System.out.printf("%s | %s | %s \n",profile.getName(), profile.getCommandCount(), profile.getSeed());
+            System.out.printf("=== Profile: %s | Commands: %s | Seed: %s ===\n",profile.getName(), profile.getCommandCount(), profile.getSeed());
             for(int threadCount: threads){
                 runMultithreaded(threadCount, profile);
             }
@@ -43,7 +45,7 @@ public class SingleWriterBenchmarkRunner {
         EventListener eventRecorder = new EventRecorder(false);
         LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
         LiveOrderTracker tracker = new LiveOrderTracker();
-        SingleWriterMatchingEngine singleWriterMatchingEngine = new SingleWriterMatchingEngine(eventRecorder,latencyRecorder,tracker,65_316);
+        SingleWriterMatchingEngine singleWriterMatchingEngine = new SingleWriterMatchingEngine(eventRecorder,latencyRecorder,tracker, Constants.QUEUE_CAPACITY);
 
         CountDownLatch ready = new CountDownLatch(threadCount);
         CountDownLatch start = new CountDownLatch(1);
@@ -92,6 +94,7 @@ public class SingleWriterBenchmarkRunner {
         System.out.println(singleWriterMatchingEngine.getLiveOrderTracker().summary());
         System.out.println("Submitted Commands: "+ singleWriterMatchingEngine.getSubmittedCommands());
         System.out.println("Processed Commands: "+ singleWriterMatchingEngine.getProcessedCommands());
+        InvariantChecker.check(singleWriterMatchingEngine);
     }
 
     private static void runThread(int threadId, SingleWriterMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
