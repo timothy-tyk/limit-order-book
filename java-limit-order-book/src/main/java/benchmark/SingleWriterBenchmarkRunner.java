@@ -1,9 +1,6 @@
 package benchmark;
 
-import command.AddLimitOrderCommand;
-import command.CancelOrderCommand;
-import command.Command;
-import command.ModifyOrderCommand;
+import command.*;
 import core.Side;
 import engine.MatchingEngine;
 import engine.concurrent.SynchronizedMatchingEngine;
@@ -42,7 +39,7 @@ public class SingleWriterBenchmarkRunner {
         long commandCount = profile.getCommandCount();
         long commandsPerThread = commandCount/threadCount;
 
-        EventListener eventRecorder = new EventRecorder(false);
+        EventListener eventRecorder = new EventRecorder(Constants.RETAIN_EVENTS);
         LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
         LiveOrderTracker tracker = new LiveOrderTracker();
         SingleWriterMatchingEngine singleWriterMatchingEngine = new SingleWriterMatchingEngine(eventRecorder,latencyRecorder,tracker, Constants.QUEUE_CAPACITY);
@@ -102,50 +99,77 @@ public class SingleWriterBenchmarkRunner {
         long orderId = (1 + threadId) * 1_000_000L;
         long sequence = threadId * 1_000_000L;
         long basePrice = 100_000;
+        long submittedCount=0;
 
-        for (long i = 0; i < commandsPerThread; i++) {
+        while(submittedCount<commandsPerThread) {
             Command command;
             int action = random.nextInt(100);
             if (action < profile.addPercent || !engine.getLiveOrderTracker().hasLiveOrders()) {
-                Side side = random.nextBoolean() ? Side.BUY : Side.SELL;
-                long price;
-                if (side == Side.BUY) {
-                    price = basePrice - (random.nextInt(50) + 1);   // 99,950 to 99,999
-                } else {
-                    price = basePrice + (random.nextInt(50) + 1);   // 100,001 to 100,050
+                if(action<profile.marketPercent){
+                    MarketOrderCommand marketOrderCommand = new MarketOrderCommand(
+                            sequence++,
+                            orderId++,
+                            random.nextBoolean() ? Side.BUY : Side.SELL,
+                            random.nextInt(100) + 1
+                    );
+                    command = marketOrderCommand;
+                    engine.submitCommand(command);
+                    submittedCount++;
+                }else {
+                    Side side = random.nextBoolean() ? Side.BUY : Side.SELL;
+                    long priceOffset = random.nextInt(20) - 10;
+                    long price = basePrice - priceOffset;
+                    long qty = random.nextInt(100) + 1;
+                    AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
+                            sequence++,
+                            orderId++,
+                            side,
+                            price,
+                            qty
+                    );
+                    command = addLimitOrderCommand;
+                    engine.submitCommand(command);
+                    submittedCount++;
                 }
-                long qty = random.nextInt(100) + 1;
-                AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
-                        sequence++,
-                        orderId++,
-                        side,
-                        price,
-                        qty
-                );
-                command = addLimitOrderCommand;
-                engine.submitCommand(command);
             } else if (action <= profile.addPercent + profile.cancelPercent) {
                 if(!engine.getLiveOrderTracker().hasLiveOrders()) continue; //guard cancel against no-live-order scenario
-                long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
+
+                long orderIdToCancel;
+                try{
+                    // Catch the race condition where tracker becomes empty
+                    // between the check above (if(!engine.....)) and this method call
+                    orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
+                }catch (IllegalStateException e){
+                   continue; // retry the iteration
+                }
                 CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,orderIdToCancel);
                 command = cancelOrderCommand;
                 engine.submitCommand(command);
+                submittedCount++;
 
-//                TODO: Should producer or consumer thread decide which order to remove?
+    //                TODO: Should producer or consumer thread decide which order to remove?
 
             } else {
                 if(!engine.getLiveOrderTracker().hasLiveOrders()) continue; //guard modify against no-live-order scenario
-                long orderIdToModify = engine.getLiveOrderTracker().randomLiveOrderId(random);
+
+                long orderIdToModify;
+                try{
+                    // Catch the race condition where tracker becomes empty
+                    // between the check above and this method call
+                    orderIdToModify = engine.getLiveOrderTracker().randomLiveOrderId(random);
+                }catch (IllegalStateException e){
+                    continue; // retry the iteration
+                }
                 Side newSide = random.nextBoolean() ? Side.BUY : Side.SELL;
                 long priceOffset = random.nextInt(20) - 10;
                 long newPrice = basePrice - priceOffset;
                 long newQty = random.nextInt(100) + 1;
                 ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(sequence++,orderIdToModify, newSide, newPrice, newQty);
                 engine.submitCommand(modifyOrderCommand);
+                submittedCount++;
             }
 
         }
     }
-
 
 }

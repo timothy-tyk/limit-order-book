@@ -5,6 +5,7 @@ import benchmark.WorkloadProfile;
 import engine.concurrent.ReentrantLockMatchingEngine;
 import engine.concurrent.SynchronizedMatchingEngine;
 import event.EventListener;
+import utils.Constants;
 import utils.LiveOrderTracker;
 import validation.EventRecorder;
 import validation.InvariantChecker;
@@ -16,8 +17,7 @@ import java.util.concurrent.Executors;
 public class ConcurrentWorkloadRunner {
 
     public void runConcurrentWorkload(int threadCount, WorkloadProfile profile) throws InterruptedException {
-        final boolean RETAIN_EVENTS=false;
-        EventListener eventListener = new EventRecorder(RETAIN_EVENTS);
+        EventListener eventListener = new EventRecorder(Constants.RETAIN_EVENTS);
         LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
         LiveOrderTracker liveOrderTracker = new LiveOrderTracker();
         SynchronizedMatchingEngine synchronizedMatchingEngine = new SynchronizedMatchingEngine(eventListener, latencyRecorder, liveOrderTracker);

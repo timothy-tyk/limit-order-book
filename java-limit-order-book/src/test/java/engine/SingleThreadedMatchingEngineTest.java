@@ -240,7 +240,5 @@ public class SingleThreadedMatchingEngineTest {
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getTotalQuantity(),32);
         Assert.assertEquals(engine.getOrderBook().getBids().get(100005L).getOrders().pollFirstEntry().getValue().getOrderId(),5);
 
-
-
     }
 }

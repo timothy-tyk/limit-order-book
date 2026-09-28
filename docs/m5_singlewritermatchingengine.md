@@ -1,5 +1,5 @@
-MT_ADD_ONLY | 1000000 | 42
-Threads: 1, Elapsed: 592.034 ms, Throughput: 1.69M/sec
+=== Profile: MT_ADD_ONLY | Commands: 1000000 | Seed: 42 ===
+Threads: 1, Elapsed: 555.734 ms, Throughput: 1.80M/sec
 Events:
 Orders Accepted: 1000000
 Orders Modified: 0
@@ -12,25 +12,147 @@ Rejection Reason: INVALID_QTY | 0
 Rejection Reason: NO_LIQUIDITY | 0
 Market Orders Accepted: 0
 Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
+Total Trades: 792872
+Last Event Sequence: 1792872
+
+Latency:
+p50: 542ns
+p90: 2125ns
+p99: 13083ns
+p99.9: 82083ns
+max: 3993292ns
+avg: 2030.9899ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 2, Elapsed: 785.748 ms, Throughput: 1.27M/sec
+Events:
+Orders Accepted: 1000000
+Orders Modified: 0
+Orders Cancelled: 0
+Orders Rejected: 0
+Rejection Reason: UNKNOWN_ORDER | 0
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 0
+Market Orders Rejected: 0
+Total Trades: 793296
+Last Event Sequence: 1793296
+
+Latency:
+p50: 625ns
+p90: 1625ns
+p99: 4458ns
+p99.9: 17292ns
+max: 310375ns
+avg: 922.3141ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 4, Elapsed: 809.768 ms, Throughput: 1.23M/sec
+Events:
+Orders Accepted: 1000000
+Orders Modified: 0
+Orders Cancelled: 0
+Orders Rejected: 0
+Rejection Reason: UNKNOWN_ORDER | 0
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 0
+Market Orders Rejected: 0
+Total Trades: 792825
+Last Event Sequence: 1792825
+
+Latency:
+p50: 167ns
+p90: 542ns
+p99: 1958ns
+p99.9: 8250ns
+max: 42458ns
+avg: 306.8421ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 8, Elapsed: 1191.389 ms, Throughput: 0.84M/sec
+Events:
+Orders Accepted: 1000000
+Orders Modified: 0
+Orders Cancelled: 0
+Orders Rejected: 0
+Rejection Reason: UNKNOWN_ORDER | 0
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 0
+Market Orders Rejected: 0
+Total Trades: 793226
+Last Event Sequence: 1793226
+
+Latency:
+p50: 208ns
+p90: 541ns
+p99: 1083ns
+p99.9: 5625ns
+max: 29958ns
+avg: 297.8263ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+=== Profile: MT_ADD_AND_MARKET | Commands: 1000000 | Seed: 42 ===
+Threads: 1, Elapsed: 438.122 ms, Throughput: 2.28M/sec
+Events:
+Orders Accepted: 850133
+Orders Modified: 0
+Orders Cancelled: 0
+Orders Rejected: 0
+Rejection Reason: UNKNOWN_ORDER | 0
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 149867
+Market Orders Rejected: 0
+Total Trades: 906721
+Last Event Sequence: 1906721
 
 Latency:
 p50: 375ns
-p90: 1208ns
-p99: 4875ns
-p99.9: 43917ns
-max: 3573167ns
-avg: 1446.7061ns
+p90: 1250ns
+p99: 2625ns
+p99.9: 10541ns
+max: 56292ns
+avg: 586.155ns
 
 
 Submitted Commands: 1000000
 Processed Commands: 1000000
 Invariance Check Started
 Invariance Check Complete
-Threads: 2, Elapsed: 731.979 ms, Throughput: 1.37M/sec
+
+Threads: 2, Elapsed: 682.274 ms, Throughput: 1.47M/sec
 Events:
-Orders Accepted: 1000000
+Orders Accepted: 849606
 Orders Modified: 0
 Orders Cancelled: 0
 Orders Rejected: 0
@@ -39,144 +161,28 @@ Rejection Reason: DUPLICATED_ORDER_ID | 0
 Rejection Reason: INVALID_PRICE | 0
 Rejection Reason: INVALID_QTY | 0
 Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
+Market Orders Accepted: 150394
 Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
-
-Latency:
-p50: 167ns
-p90: 334ns
-p99: 1584ns
-p99.9: 10083ns
-max: 58833ns
-avg: 279.9089ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 4, Elapsed: 998.968 ms, Throughput: 1.00M/sec
-Events:
-Orders Accepted: 1000000
-Orders Modified: 0
-Orders Cancelled: 0
-Orders Rejected: 0
-Rejection Reason: UNKNOWN_ORDER | 0
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
-
-Latency:
-p50: 666ns
-p90: 916ns
-p99: 2667ns
-p99.9: 11625ns
-max: 116292ns
-avg: 628.0725ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 8, Elapsed: 1374.961 ms, Throughput: 0.73M/sec
-Events:
-Orders Accepted: 1000000
-Orders Modified: 0
-Orders Cancelled: 0
-Orders Rejected: 0
-Rejection Reason: UNKNOWN_ORDER | 0
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
-
-Latency:
-p50: 167ns
-p90: 334ns
-p99: 2084ns
-p99.9: 11583ns
-max: 63625ns
-avg: 293.77ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-MT_ADD_AND_MARKET | 1000000 | 42
-Threads: 1, Elapsed: 508.255 ms, Throughput: 1.97M/sec
-Events:
-Orders Accepted: 1000000
-Orders Modified: 0
-Orders Cancelled: 0
-Orders Rejected: 0
-Rejection Reason: UNKNOWN_ORDER | 0
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
-
-Latency:
-p50: 125ns
-p90: 166ns
-p99: 708ns
-p99.9: 2583ns
-max: 39583ns
-avg: 137.4073ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 2, Elapsed: 761.079 ms, Throughput: 1.31M/sec
-Events:
-Orders Accepted: 1000000
-Orders Modified: 0
-Orders Cancelled: 0
-Orders Rejected: 0
-Rejection Reason: UNKNOWN_ORDER | 0
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
+Total Trades: 906938
+Last Event Sequence: 1906938
 
 Latency:
 p50: 208ns
-p90: 333ns
+p90: 541ns
 p99: 1083ns
-p99.9: 5583ns
-max: 40917ns
-avg: 242.696ns
+p99.9: 2958ns
+max: 20000ns
+avg: 271.8409ns
 
 
 Submitted Commands: 1000000
 Processed Commands: 1000000
 Invariance Check Started
 Invariance Check Complete
-Threads: 4, Elapsed: 1042.443 ms, Throughput: 0.96M/sec
+
+Threads: 4, Elapsed: 1015.086 ms, Throughput: 0.99M/sec
 Events:
-Orders Accepted: 1000000
+Orders Accepted: 850061
 Orders Modified: 0
 Orders Cancelled: 0
 Orders Rejected: 0
@@ -185,27 +191,28 @@ Rejection Reason: DUPLICATED_ORDER_ID | 0
 Rejection Reason: INVALID_PRICE | 0
 Rejection Reason: INVALID_QTY | 0
 Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
+Market Orders Accepted: 149939
 Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
+Total Trades: 906172
+Last Event Sequence: 1906172
 
 Latency:
 p50: 208ns
-p90: 292ns
-p99: 958ns
-p99.9: 2209ns
-max: 49791ns
-avg: 233.2686ns
+p90: 583ns
+p99: 1209ns
+p99.9: 5166ns
+max: 21625ns
+avg: 295.2352ns
 
 
 Submitted Commands: 1000000
 Processed Commands: 1000000
 Invariance Check Started
 Invariance Check Complete
-Threads: 8, Elapsed: 1590.457 ms, Throughput: 0.63M/sec
+
+Threads: 8, Elapsed: 1457.528 ms, Throughput: 0.69M/sec
 Events:
-Orders Accepted: 1000000
+Orders Accepted: 849973
 Orders Modified: 0
 Orders Cancelled: 0
 Orders Rejected: 0
@@ -214,257 +221,266 @@ Rejection Reason: DUPLICATED_ORDER_ID | 0
 Rejection Reason: INVALID_PRICE | 0
 Rejection Reason: INVALID_QTY | 0
 Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
+Market Orders Accepted: 150027
 Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 1000000
-
-Latency:
-p50: 167ns
-p90: 292ns
-p99: 958ns
-p99.9: 2250ns
-max: 49542ns
-avg: 225.3365ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-MT_ADD_THEN_CANCEL | 1000000 | 42
-Threads: 1, Elapsed: 4.516 ms, Throughput: 221.42M/sec
-Events:
-Orders Accepted: 24
-Orders Modified: 0
-Orders Cancelled: 1
-Orders Rejected: 17
-Rejection Reason: UNKNOWN_ORDER | 17
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 0
-Last Event Sequence: 42
-
-Latency:
-p50: 583ns
-p90: 8375ns
-p99: 4160375ns
-p99.9: 4160375ns
-max: 4160375ns
-avg: 102658.78571428571ns
-
-
-Submitted Commands: 42
-Processed Commands: 42
-Invariance Check Started
-Invariance Check Complete
-Threads: 2, Elapsed: 1026.268 ms, Throughput: 0.97M/sec
-Events:
-Orders Accepted: 499670
-Orders Modified: 169828
-Orders Cancelled: 184398
-Orders Rejected: 146104
-Rejection Reason: UNKNOWN_ORDER | 146104
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 147482
-Last Event Sequence: 1147482
+Total Trades: 906707
+Last Event Sequence: 1906707
 
 Latency:
 p50: 208ns
-p90: 916ns
-p99: 8292ns
-p99.9: 27042ns
-max: 877000ns
-avg: 680.3152ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 4, Elapsed: 1065.380 ms, Throughput: 0.94M/sec
-Events:
-Orders Accepted: 500088
-Orders Modified: 169561
-Orders Cancelled: 184682
-Orders Rejected: 145669
-Rejection Reason: UNKNOWN_ORDER | 145669
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 147133
-Last Event Sequence: 1147133
-
-Latency:
-p50: 125ns
-p90: 334ns
-p99: 2209ns
-p99.9: 7334ns
-max: 34792ns
-avg: 228.1483ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 8, Elapsed: 1304.339 ms, Throughput: 0.77M/sec
-Events:
-Orders Accepted: 500059
-Orders Modified: 170182
-Orders Cancelled: 183986
-Orders Rejected: 145773
-Rejection Reason: UNKNOWN_ORDER | 145773
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 148343
-Last Event Sequence: 1148343
-
-Latency:
-p50: 125ns
-p90: 292ns
-p99: 1708ns
-p99.9: 5916ns
-max: 92125ns
-avg: 204.3443ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-MT_THREAD_LOCAL_CHURN | 1000000 | 42
-Threads: 1, Elapsed: 578.033 ms, Throughput: 1.73M/sec
-Events:
-Orders Accepted: 799548
-Orders Modified: 81764
-Orders Cancelled: 101095
-Orders Rejected: 17593
-Rejection Reason: UNKNOWN_ORDER | 17593
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 75218
-Last Event Sequence: 1075218
-
-Latency:
-p50: 166ns
-p90: 333ns
-p99: 4500ns
-p99.9: 7500ns
-max: 89833ns
-avg: 290.0759ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 2, Elapsed: 922.465 ms, Throughput: 1.08M/sec
-Events:
-Orders Accepted: 799886
-Orders Modified: 80159
-Orders Cancelled: 98255
-Orders Rejected: 21700
-Rejection Reason: UNKNOWN_ORDER | 21700
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 73965
-Last Event Sequence: 1073965
-
-Latency:
-p50: 167ns
-p90: 333ns
-p99: 917ns
-p99.9: 1709ns
-max: 47833ns
-avg: 208.4125ns
-
-
-Submitted Commands: 1000000
-Processed Commands: 1000000
-Invariance Check Started
-Invariance Check Complete
-Threads: 4, Elapsed: 1011.328 ms, Throughput: 0.99M/sec
-Events:
-Orders Accepted: 799738
-Orders Modified: 80281
-Orders Cancelled: 98300
-Orders Rejected: 21681
-Rejection Reason: UNKNOWN_ORDER | 21681
-Rejection Reason: DUPLICATED_ORDER_ID | 0
-Rejection Reason: INVALID_PRICE | 0
-Rejection Reason: INVALID_QTY | 0
-Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
-Market Orders Rejected: 0
-Total Trades: 74024
-Last Event Sequence: 1074024
-
-Latency:
-p50: 167ns
-p90: 333ns
+p90: 500ns
 p99: 1000ns
-p99.9: 1709ns
-max: 61667ns
-avg: 206.1524ns
+p99.9: 2584ns
+max: 16708ns
+avg: 262.8708ns
 
 
 Submitted Commands: 1000000
 Processed Commands: 1000000
 Invariance Check Started
 Invariance Check Complete
-Threads: 8, Elapsed: 1831.883 ms, Throughput: 0.55M/sec
+
+=== Profile: MT_ADD_THEN_CANCEL | Commands: 1000000 | Seed: 42 ===
+Threads: 1, Elapsed: 345.774 ms, Throughput: 2.89M/sec
 Events:
-Orders Accepted: 799643
-Orders Modified: 79895
-Orders Cancelled: 97390
-Orders Rejected: 23072
-Rejection Reason: UNKNOWN_ORDER | 23072
+Orders Accepted: 383078
+Orders Modified: 1325
+Orders Cancelled: 1415
+Orders Rejected: 463990
+Rejection Reason: UNKNOWN_ORDER | 463990
 Rejection Reason: DUPLICATED_ORDER_ID | 0
 Rejection Reason: INVALID_PRICE | 0
 Rejection Reason: INVALID_QTY | 0
 Rejection Reason: NO_LIQUIDITY | 0
-Market Orders Accepted: 0
+Market Orders Accepted: 150192
 Market Orders Rejected: 0
-Total Trades: 73789
-Last Event Sequence: 1073789
+Total Trades: 512279
+Last Event Sequence: 1512279
 
 Latency:
-p50: 166ns
-p90: 292ns
-p99: 833ns
-p99.9: 1750ns
-max: 53833ns
-avg: 194.142ns
+p50: 334ns
+p90: 1042ns
+p99: 2000ns
+p99.9: 8625ns
+max: 4115333ns
+avg: 921.6883ns
 
 
 Submitted Commands: 1000000
 Processed Commands: 1000000
 Invariance Check Started
 Invariance Check Complete
+
+Threads: 2, Elapsed: 360.702 ms, Throughput: 2.77M/sec
+Events:
+Orders Accepted: 350509
+Orders Modified: 2
+Orders Cancelled: 2
+Orders Rejected: 499434
+Rejection Reason: UNKNOWN_ORDER | 499434
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 150053
+Market Orders Rejected: 0
+Total Trades: 477823
+Last Event Sequence: 1477823
+
+Latency:
+p50: 84ns
+p90: 417ns
+p99: 1208ns
+p99.9: 2084ns
+max: 7875ns
+avg: 178.7847ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 4, Elapsed: 521.701 ms, Throughput: 1.92M/sec
+Events:
+Orders Accepted: 350322
+Orders Modified: 8
+Orders Cancelled: 4
+Orders Rejected: 499781
+Rejection Reason: UNKNOWN_ORDER | 499781
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 149885
+Market Orders Rejected: 0
+Total Trades: 477207
+Last Event Sequence: 1477207
+
+Latency:
+p50: 84ns
+p90: 375ns
+p99: 917ns
+p99.9: 1833ns
+max: 13041ns
+avg: 162.0758ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 8, Elapsed: 938.892 ms, Throughput: 1.07M/sec
+Events:
+Orders Accepted: 349975
+Orders Modified: 3
+Orders Cancelled: 3
+Orders Rejected: 500064
+Rejection Reason: UNKNOWN_ORDER | 500064
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 149955
+Market Orders Rejected: 0
+Total Trades: 476629
+Last Event Sequence: 1476629
+
+Latency:
+p50: 84ns
+p90: 417ns
+p99: 1042ns
+p99.9: 1791ns
+max: 16167ns
+avg: 173.5342ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+=== Profile: MT_THREAD_LOCAL_CHURN | Commands: 1000000 | Seed: 42 ===
+Threads: 1, Elapsed: 387.420 ms, Throughput: 2.58M/sec
+Events:
+Orders Accepted: 650138
+Orders Modified: 19322
+Orders Cancelled: 23522
+Orders Rejected: 157280
+Rejection Reason: UNKNOWN_ORDER | 157280
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 149738
+Market Orders Rejected: 0
+Total Trades: 762570
+Last Event Sequence: 1762570
+
+Latency:
+p50: 208ns
+p90: 459ns
+p99: 834ns
+p99.9: 1791ns
+max: 12084ns
+avg: 238.408ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 2, Elapsed: 607.778 ms, Throughput: 1.65M/sec
+Events:
+Orders Accepted: 650332
+Orders Modified: 19662
+Orders Cancelled: 23725
+Orders Rejected: 156216
+Rejection Reason: UNKNOWN_ORDER | 156216
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 150065
+Market Orders Rejected: 0
+Total Trades: 762780
+Last Event Sequence: 1762780
+
+Latency:
+p50: 167ns
+p90: 542ns
+p99: 1208ns
+p99.9: 1958ns
+max: 13625ns
+avg: 247.3793ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 4, Elapsed: 829.093 ms, Throughput: 1.21M/sec
+Events:
+Orders Accepted: 650861
+Orders Modified: 19554
+Orders Cancelled: 24068
+Orders Rejected: 155473
+Rejection Reason: UNKNOWN_ORDER | 155473
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 150044
+Market Orders Rejected: 0
+Total Trades: 763238
+Last Event Sequence: 1763238
+
+Latency:
+p50: 166ns
+p90: 500ns
+p99: 1125ns
+p99.9: 5125ns
+max: 27584ns
+avg: 240.6793ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
+Threads: 8, Elapsed: 1175.162 ms, Throughput: 0.85M/sec
+Events:
+Orders Accepted: 649681
+Orders Modified: 19458
+Orders Cancelled: 23529
+Orders Rejected: 157378
+Rejection Reason: UNKNOWN_ORDER | 157378
+Rejection Reason: DUPLICATED_ORDER_ID | 0
+Rejection Reason: INVALID_PRICE | 0
+Rejection Reason: INVALID_QTY | 0
+Rejection Reason: NO_LIQUIDITY | 0
+Market Orders Accepted: 149954
+Market Orders Rejected: 0
+Total Trades: 762359
+Last Event Sequence: 1762359
+
+Latency:
+p50: 167ns
+p90: 459ns
+p99: 958ns
+p99.9: 1875ns
+max: 9792ns
+avg: 220.5168ns
+
+
+Submitted Commands: 1000000
+Processed Commands: 1000000
+Invariance Check Started
+Invariance Check Complete
+
 
 Process finished with exit code 0

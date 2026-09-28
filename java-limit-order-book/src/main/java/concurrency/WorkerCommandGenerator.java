@@ -3,6 +3,7 @@ package concurrency;
 import benchmark.WorkloadProfile;
 import command.AddLimitOrderCommand;
 import command.Command;
+import command.MarketOrderCommand;
 import core.Side;
 import engine.MatchingEngine;
 import engine.concurrent.ConcurrentMatchingEngine;
@@ -36,18 +37,28 @@ public class WorkerCommandGenerator implements ConcurrentWorkloadGenerator {
             int action = random.nextInt(100);
             Command command;
             if (action < profile.getAddPercent() || !liveOrderTracker.hasLiveOrders()) {
-                Side side = random.nextBoolean() ? Side.BUY : Side.SELL;
-                long priceOffset = random.nextInt(20) - 10;
-                long qty = random.nextInt(100) + 1;
-                AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
-                        sequence++,
-                        nextOrderId++,
-                        side,
-                        basePrice - priceOffset,
-                        qty
-                );
-                command = addLimitOrderCommand;
-                engine.submitCommand(command);
+                if(action<profile.getMarketPercent()){
+                    MarketOrderCommand marketOrderCommand = new MarketOrderCommand(
+                            sequence++,
+                            nextOrderId++,
+                            random.nextBoolean() ? Side.BUY : Side.SELL,
+                            random.nextInt(100) + 1
+                            );
+                    engine.submitCommand(marketOrderCommand);
+                }else {
+                    Side side = random.nextBoolean() ? Side.BUY : Side.SELL;
+                    long priceOffset = random.nextInt(20) - 10;
+                    long qty = random.nextInt(100) + 1;
+                    AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
+                            sequence++,
+                            nextOrderId++,
+                            side,
+                            basePrice - priceOffset,
+                            qty
+                    );
+                    command = addLimitOrderCommand;
+                    engine.submitCommand(command);
+                }
             } else if (action <= profile.getAddPercent() + profile.getCancelPercent()) {
 //              TOCTOU = Time of Check, Time of Use:
 //              2 threads may pick the same orderIdToRemove at the same time, but only 1 thread can remove it,

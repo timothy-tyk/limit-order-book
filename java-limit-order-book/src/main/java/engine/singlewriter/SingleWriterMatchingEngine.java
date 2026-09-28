@@ -68,8 +68,6 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
             }
         }
         delegate.stop();
-
-
     }
 
     private void runLoop() {
@@ -91,7 +89,6 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
             failure = t;
         }
     }
-
 
     @Override
     public long lastProcessedSequence() {
@@ -161,11 +158,6 @@ public class SingleWriterMatchingEngine implements MatchingEngine {
         return processedCommands;
     }
 
-//    public void cancelRandomOrder(long sequence, Random random){
-//        long orderIdToCancel = liveOrderTracker.randomLiveOrderId(random);
-//        CancelOrderCommand cmd = new CancelOrderCommand(sequence, orderIdToCancel);
-//        delegate.submitCommand(cmd);
-//    }
 }
 
 
