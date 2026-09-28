@@ -42,10 +42,11 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                 long qty = random.nextInt(100)+1;
                 int marketOrNot = random.nextInt(100);
                 if(marketOrNot<profile.getMarketPercent()){ //% of orders are Market
-                    command = new MarketOrderCommand(sequence, nextOrderId, side, qty);
+                    command = new MarketOrderCommand(sequence, System.nanoTime(),nextOrderId, side, qty);
                 }else {
                     command = new AddLimitOrderCommand(
                             sequence,
+                            System.nanoTime(),
                             nextOrderId,
                             side,
                             price,
@@ -56,7 +57,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
             }else if(action<100-profile.getCancelPercent()){
 //              Cancel Limit Order (20%)
                 long orderIdToRemove = tracker.randomLiveOrderId(random);
-                command = new CancelOrderCommand(sequence, orderIdToRemove);
+                command = new CancelOrderCommand(sequence, System.nanoTime(),orderIdToRemove);
             }else{
 //              Modify Limit Order (10%)
                 long orderIdToRemove = tracker.randomLiveOrderId(random);
@@ -65,7 +66,7 @@ public final class RandomWorkloadGenerator implements WorkloadGenerator{
                 long newPrice = basePrice+priceOffset;
                 long newQty = random.nextInt(100)+1;
 
-                command = new ModifyOrderCommand(sequence, orderIdToRemove,newSide,newPrice,newQty);
+                command = new ModifyOrderCommand(sequence, System.nanoTime(),orderIdToRemove,newSide,newPrice,newQty);
             }
 //          Submit command
             engine.submitCommand(command);

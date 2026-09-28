@@ -6,6 +6,7 @@ import engine.MatchingEngine;
 import engine.concurrent.SynchronizedMatchingEngine;
 import engine.singlewriter.SingleWriterMatchingEngine;
 import event.EventListener;
+import jdk.swing.interop.SwingInterOpUtils;
 import utils.Constants;
 import utils.LiveOrderTracker;
 import validation.EventRecorder;
@@ -20,10 +21,10 @@ import java.util.concurrent.Executors;
 public class SingleWriterBenchmarkRunner {
     public static void main() throws InterruptedException {
         List<WorkloadProfile> workloadProfiles = List.of(
-                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
-                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
-                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 25, 25, 15),
-                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15)
+                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0)
+//                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
+//                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 25, 25, 15),
+//                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15)
         );
 
         int[] threads = {1,2,4,8};
@@ -108,6 +109,7 @@ public class SingleWriterBenchmarkRunner {
                 if(action<profile.marketPercent){
                     MarketOrderCommand marketOrderCommand = new MarketOrderCommand(
                             sequence++,
+                            System.nanoTime(),
                             orderId++,
                             random.nextBoolean() ? Side.BUY : Side.SELL,
                             random.nextInt(100) + 1
@@ -122,6 +124,7 @@ public class SingleWriterBenchmarkRunner {
                     long qty = random.nextInt(100) + 1;
                     AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
                             sequence++,
+                            System.nanoTime(),
                             orderId++,
                             side,
                             price,
@@ -142,7 +145,7 @@ public class SingleWriterBenchmarkRunner {
                 }catch (IllegalStateException e){
                    continue; // retry the iteration
                 }
-                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,orderIdToCancel);
+                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,System.nanoTime(),orderIdToCancel);
                 command = cancelOrderCommand;
                 engine.submitCommand(command);
                 submittedCount++;
@@ -164,12 +167,14 @@ public class SingleWriterBenchmarkRunner {
                 long priceOffset = random.nextInt(20) - 10;
                 long newPrice = basePrice - priceOffset;
                 long newQty = random.nextInt(100) + 1;
-                ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(sequence++,orderIdToModify, newSide, newPrice, newQty);
+                ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(sequence++,System.nanoTime(),orderIdToModify, newSide, newPrice, newQty);
                 engine.submitCommand(modifyOrderCommand);
                 submittedCount++;
             }
 
         }
     }
+
+
 
 }

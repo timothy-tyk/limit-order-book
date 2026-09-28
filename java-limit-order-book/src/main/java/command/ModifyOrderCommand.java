@@ -4,13 +4,15 @@ import core.Side;
 
 public class ModifyOrderCommand implements Command{
     private long sequence;
+    private long timestamp;
     private long orderId;
     private Side side;
     private long newPrice;
     private long newQuantity;
 
-    public ModifyOrderCommand(long sequence, long orderId, Side side, long newPrice, long newQuantity) {
+    public ModifyOrderCommand(long sequence,long timestamp ,long orderId, Side side, long newPrice, long newQuantity) {
         this.sequence = sequence;
+        this.timestamp = timestamp;
         this.orderId = orderId;
         this.side = side;
         this.newPrice = newPrice;
@@ -20,6 +22,11 @@ public class ModifyOrderCommand implements Command{
     @Override
     public long sequence() {
         return sequence;
+    }
+
+    @Override
+    public long timestamp() {
+        return timestamp;
     }
 
     public long getOrderId() {

@@ -76,12 +76,12 @@ public final class LatencyRecorder {
     public String latencySummary(){
         StringBuilder sb = new StringBuilder();
         sb.append("Latency:"+"\n");
-        sb.append("    p50: "+percentile(50)+"ns"+"\n");
-        sb.append("    p90: "+percentile(90)+"ns"+"\n");
-        sb.append("    p99: "+percentile(99)+"ns"+"\n");
-        sb.append("    p99.9: "+percentile(99.9)+"ns"+"\n");
-        sb.append("    max: "+max()+"ns"+"\n");
-        sb.append("    avg: "+averageNanos()+"ns"+"\n");
+        sb.append("    p50: "+percentile(50)+"ns | " +(double)percentile(50)/1_000_000 +"ms"+"\n");
+        sb.append("    p90: "+percentile(90)+"ns | "+(double)percentile(90)/1_000_000 +"ms"+"\n");
+        sb.append("    p99: "+percentile(99)+"ns | "+(double)percentile(99)/1_000_000 +"ms"+"\n");
+        sb.append("    p99.9: "+percentile(99.9)+"ns | "+(double)percentile(99.9)/1_000_000 +"ms"+"\n");
+        sb.append("    max: "+max()+"ns | "+(double)max()/1_000_000 +"ms"+"\n");
+        sb.append("    avg: "+averageNanos()+"ns | "+(double)averageNanos()/1_000_000 +"ms"+"\n");
         return sb.toString();
     }
 }

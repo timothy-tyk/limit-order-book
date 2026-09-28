@@ -43,7 +43,7 @@ public final class SynchronizedMatchingEngine implements MatchingEngine, Concurr
     public synchronized void submitRandomCancel(long sequence, Random random){
         if(!engine.getLiveOrderTracker().hasLiveOrders()) return;
         long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
-        CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence, orderIdToCancel);
+        CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence, System.nanoTime(),orderIdToCancel);
         engine.submitCommand(cancelOrderCommand);
     }
 
@@ -57,6 +57,7 @@ public final class SynchronizedMatchingEngine implements MatchingEngine, Concurr
         long newQty = random.nextInt(100) + 1;
         ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(
                 sequence,
+                System.nanoTime(),
                 orderIdToModify,
                 newSide,
                 newPrice,

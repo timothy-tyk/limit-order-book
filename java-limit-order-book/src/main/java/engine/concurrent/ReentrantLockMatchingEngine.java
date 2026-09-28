@@ -154,7 +154,7 @@ public final class ReentrantLockMatchingEngine implements MatchingEngine, Concur
         try {
             if(!engine.getLiveOrderTracker().hasLiveOrders()) return;
             long orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
-            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence, orderIdToCancel);
+            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence,System.nanoTime(), orderIdToCancel);
             engine.submitCommand(cancelOrderCommand);
         }finally{
             lock.unlock();
@@ -173,6 +173,7 @@ public final class ReentrantLockMatchingEngine implements MatchingEngine, Concur
             long newQty = random.nextInt(100) + 1;
             ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(
                     sequence,
+                    System.nanoTime(),
                     orderIdToModify,
                     newSide,
                     newPrice,

@@ -55,7 +55,7 @@ public final class SingleThreadedMatchingEngine implements MatchingEngine {
 
     @Override
     public void submitCommand(Command command){
-        long latencyStart = System.nanoTime();
+        long latencyStart = command.timestamp();
         switch(command){
             case AddLimitOrderCommand cmd -> addLimitOrder(cmd);
             case CancelOrderCommand cmd -> cancelLimitOrder(cmd);
@@ -64,6 +64,7 @@ public final class SingleThreadedMatchingEngine implements MatchingEngine {
             default -> throw new IllegalStateException("Unexpected value: " + command);
         }
         long latencyEnd = System.nanoTime();
+//        Measure latency from command creation to processing time
         latencyRecorder.record(latencyEnd-latencyStart);
 
         lastProcessedSequence = command.sequence();

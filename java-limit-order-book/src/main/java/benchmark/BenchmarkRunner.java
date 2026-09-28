@@ -31,7 +31,7 @@ public class BenchmarkRunner {
 
             for(int measured=0;measured<1;measured++){
                 EventListener eventListener = new EventRecorder(false);
-                LatencyRecorder latencyRecorder = new LatencyRecorder(1000);
+                LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
                 LiveOrderTracker tracker = new LiveOrderTracker();
                 MatchingEngine matchingEngine = new SingleThreadedMatchingEngine(eventListener, latencyRecorder, tracker);
                 WorkloadGenerator workloadGenerator = new RandomWorkloadGenerator(profile,matchingEngine);

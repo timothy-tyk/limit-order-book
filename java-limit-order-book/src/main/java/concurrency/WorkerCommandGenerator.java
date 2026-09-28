@@ -40,6 +40,7 @@ public class WorkerCommandGenerator implements ConcurrentWorkloadGenerator {
                 if(action<profile.getMarketPercent()){
                     MarketOrderCommand marketOrderCommand = new MarketOrderCommand(
                             sequence++,
+                            System.nanoTime(),
                             nextOrderId++,
                             random.nextBoolean() ? Side.BUY : Side.SELL,
                             random.nextInt(100) + 1
@@ -51,6 +52,7 @@ public class WorkerCommandGenerator implements ConcurrentWorkloadGenerator {
                     long qty = random.nextInt(100) + 1;
                     AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
                             sequence++,
+                            System.nanoTime(),
                             nextOrderId++,
                             side,
                             basePrice - priceOffset,
