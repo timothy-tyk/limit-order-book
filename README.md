@@ -157,8 +157,65 @@ More threads do not help much because all threads contend for the same lock.
 
 This motivates the next milestone: a single-writer architecture where one thread owns the order book and commands are submitted through a queue.
 
-Milestone 5:
-Single-writer queue engine
+
+## Milestone 5: Single-Writer Queue-Based Matching Engine
+
+Milestone 5 introduced a single-writer matching engine architecture.
+
+Instead of allowing multiple producer threads to lock and mutate the order book directly, all commands are submitted to a bounded queue and processed by a dedicated engine thread.
+
+The core design principle is:
+
+```text
+Only one thread owns the order book.
+All other threads submit commands to that thread.
+
+ARCHITECTURE:
+
+Producer Thread 1
+Producer Thread 2
+Producer Thread 3
+Producer Thread 4
+        |
+        | submit commands
+        v
+Bounded Command Queue
+        |
+        v
+Single Engine Thread
+        |
+        | owns OrderBook exclusively
+        v
+Matching Engine
+        |
+        v
+Events
+```
+
+Benchmark Environment:
+
+| Item | Value | 
+|:-----|:-----:| 
+| OS   | MacOS Tahoe 26.7  |
+| CPU | Apple M5 Pro 48GB  |
+| JDK | openjdk-26  |
+| Engine mode | Single-writer asynchronous matching engine  |
+| Queue type | ArrayBlockingQueue  |
+| Queue capacity | 65,316  |
+| Event mode | EventRecorder in counting mode  |
+| Workload seed | 42  |
+| Commands per profile | 1,000,000  |
+| Warmup runs | 3  |
+
+The benchmark profiles used were:
+
+- `MT_ADD_ONLY` = order acceptance, matching, trade generation, book buildup, queueing under load.
+- `MT_ADD_AND_MARKET` = limit order acceptance, market order acceptance, aggressive matching, liquidity consumption, trade generation. 
+- `MT_MIXED_WITH_STALE_CANCELS` = realistic asynchronous command races, UNKNOWN_ORDER rejection behavior, mixed command processing, event consistency under nondeterministic producer interleaving. 
+- `MT_ADD_THEN_CANCEL` = adds then cancels orders, to benchmark successful cancel path with minimal noise
+- `MT_THREAD_LOCAL_CHURN` = adds, cancels, modifies, market orders, some stale cancel/modify attempts.
+
+Results can be seen in docs/m5_singlewritermatchingengine.md
 
 Milestone 6:
 Ring buffer / low-latency engine

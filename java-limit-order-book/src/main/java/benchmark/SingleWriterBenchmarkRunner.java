@@ -2,11 +2,8 @@ package benchmark;
 
 import command.*;
 import core.Side;
-import engine.MatchingEngine;
-import engine.concurrent.SynchronizedMatchingEngine;
 import engine.singlewriter.SingleWriterMatchingEngine;
 import event.EventListener;
-import jdk.swing.interop.SwingInterOpUtils;
 import utils.Constants;
 import utils.LiveOrderTracker;
 import validation.EventRecorder;
@@ -21,10 +18,11 @@ import java.util.concurrent.Executors;
 public class SingleWriterBenchmarkRunner {
     public static void main() throws InterruptedException {
         List<WorkloadProfile> workloadProfiles = List.of(
-                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0)
-//                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
-//                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 25, 25, 15),
-//                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15)
+                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
+                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
+                new WorkloadProfile("MT_MIXED_WITH_STALE_CANCELS", 42, 1_000_000, 50, 25, 25, 15),
+                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15),
+                new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 50, 0, 0)
         );
 
         int[] threads = {1,2,4,8};
@@ -58,7 +56,11 @@ public class SingleWriterBenchmarkRunner {
                     //gets threads ready first
                     ready.countDown();
                     start.await();
-                    runThread(threadId, singleWriterMatchingEngine, commandsPerThread, profile);
+                    if(profile.getName().equals("MT_ADD_THEN_CANCEL")){
+                        runThreadForAddThenCancel(threadId, threadCount, singleWriterMatchingEngine, commandsPerThread,profile);
+                    }else {
+                        runThread(threadId, singleWriterMatchingEngine, commandsPerThread, profile);
+                    }
                 }
                 catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -172,6 +174,48 @@ public class SingleWriterBenchmarkRunner {
                 submittedCount++;
             }
 
+        }
+    }
+
+
+//    ONLY FOR MT_ADD_THEN_CANCEL
+//    normal runThread() method will Add orders (eg. id = 123) to queue and cancel proportionately. However, the order might already be
+//    fulfilled by the time the consumer thread processes the cancel order (id = 123). This leads to ALOT of rejected orders in MT_MIXED_WITH_STALE_CANCELS.
+//    So, this custom runThread method will add 500_000 BUY orders (so nothing gets fulfilled), followed by 500_000 CANCEL orders, to measure cancel latency.
+
+    private static void runThreadForAddThenCancel(int threadId, int threadCount, SingleWriterMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
+        Random random = new Random(42 + threadId);
+        long orderId = (1 + threadId) * 1_000_000L;
+        long sequence = threadId * 1_000_000L;
+        long basePrice = 100_000;
+        long submittedCount = 0;
+        long orderIdToCancel = (1 + threadId) * 1_000_000L;
+        Command command;
+        while (submittedCount < commandsPerThread) {
+            if(submittedCount<commandsPerThread/2){
+                // Add + BUY for first half of orders
+                long priceOffset = random.nextInt(20) - 10;
+                long price = basePrice - priceOffset;
+                long qty = random.nextInt(100) + 1;
+                AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
+                        sequence++,
+                        System.nanoTime(),
+                        orderId++,
+                        Side.BUY,
+                        price,
+                        qty
+                );
+                command = addLimitOrderCommand;
+                engine.submitCommand(command);
+                submittedCount++;
+            }else{
+                // Cancel orders for 2nd half
+                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++, System.nanoTime(), orderIdToCancel);
+                orderIdToCancel++;
+                command = cancelOrderCommand;
+                engine.submitCommand(command);
+                submittedCount++;
+            }
         }
     }
 

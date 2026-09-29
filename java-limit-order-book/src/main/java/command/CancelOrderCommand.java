@@ -18,7 +18,7 @@ public class CancelOrderCommand implements Command{
 
     @Override
     public long timestamp() {
-        return 0;
+        return timestamp;
     }
 
     public long getOrderId() {
