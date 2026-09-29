@@ -111,7 +111,6 @@ public class SingleWriterBenchmarkRunner {
                 if(action<profile.marketPercent){
                     MarketOrderCommand marketOrderCommand = new MarketOrderCommand(
                             sequence++,
-                            System.nanoTime(),
                             orderId++,
                             random.nextBoolean() ? Side.BUY : Side.SELL,
                             random.nextInt(100) + 1
@@ -126,7 +125,6 @@ public class SingleWriterBenchmarkRunner {
                     long qty = random.nextInt(100) + 1;
                     AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
                             sequence++,
-                            System.nanoTime(),
                             orderId++,
                             side,
                             price,
@@ -147,7 +145,7 @@ public class SingleWriterBenchmarkRunner {
                 }catch (IllegalStateException e){
                    continue; // retry the iteration
                 }
-                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,System.nanoTime(),orderIdToCancel);
+                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,orderIdToCancel);
                 command = cancelOrderCommand;
                 engine.submitCommand(command);
                 submittedCount++;
@@ -169,7 +167,7 @@ public class SingleWriterBenchmarkRunner {
                 long priceOffset = random.nextInt(20) - 10;
                 long newPrice = basePrice - priceOffset;
                 long newQty = random.nextInt(100) + 1;
-                ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(sequence++,System.nanoTime(),orderIdToModify, newSide, newPrice, newQty);
+                ModifyOrderCommand modifyOrderCommand = new ModifyOrderCommand(sequence++,orderIdToModify, newSide, newPrice, newQty);
                 engine.submitCommand(modifyOrderCommand);
                 submittedCount++;
             }
@@ -199,7 +197,6 @@ public class SingleWriterBenchmarkRunner {
                 long qty = random.nextInt(100) + 1;
                 AddLimitOrderCommand addLimitOrderCommand = new AddLimitOrderCommand(
                         sequence++,
-                        System.nanoTime(),
                         orderId++,
                         Side.BUY,
                         price,
@@ -210,7 +207,7 @@ public class SingleWriterBenchmarkRunner {
                 submittedCount++;
             }else{
                 // Cancel orders for 2nd half
-                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++, System.nanoTime(), orderIdToCancel);
+                CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++, orderIdToCancel);
                 orderIdToCancel++;
                 command = cancelOrderCommand;
                 engine.submitCommand(command);

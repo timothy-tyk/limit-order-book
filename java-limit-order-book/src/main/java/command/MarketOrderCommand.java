@@ -10,9 +10,9 @@ public class MarketOrderCommand implements Command{
     private long quantity;
 
 
-    public MarketOrderCommand(long sequence, long timestamp, long orderId, Side side, long quantity) {
+    public MarketOrderCommand(long sequence, long orderId, Side side, long quantity) {
         this.sequence = sequence;
-        this.timestamp = timestamp;
+        this.timestamp = System.nanoTime();
         this.orderId = orderId;
         this.side = side;
         this.quantity = quantity;

@@ -10,9 +10,9 @@ public class AddLimitOrderCommand implements Command{
     private long price;
     private long quantity;
 
-    public AddLimitOrderCommand(long sequence, long timestamp, long orderId, Side side, long price, long quantity) {
+    public AddLimitOrderCommand(long sequence, long orderId, Side side, long price, long quantity) {
         this.sequence = sequence;
-        this.timestamp = timestamp;
+        this.timestamp = System.nanoTime();
         this.orderId = orderId;
         this.side = side;
         this.price = price;

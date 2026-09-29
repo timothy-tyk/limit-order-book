@@ -5,9 +5,9 @@ public class CancelOrderCommand implements Command{
     private long timestamp;
     private long orderId;
 
-    public CancelOrderCommand(long sequence, long timestamp,long orderId) {
+    public CancelOrderCommand(long sequence, long orderId) {
         this.sequence = sequence;
-        this.timestamp = timestamp;
+        this.timestamp = System.nanoTime();
         this.orderId = orderId;
     }
 
