@@ -1,7 +1,10 @@
 package benchmark;
 
+import com.lmax.disruptor.WaitStrategy;
+import com.lmax.disruptor.YieldingWaitStrategy;
 import command.*;
 import core.Side;
+import engine.disruptor.DisruptorMatchingEngine;
 import engine.singlewriter.SingleWriterMatchingEngine;
 import event.EventListener;
 import utils.Constants;
@@ -16,19 +19,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Milestone 5 : Single-Writer Queue-Based Matching Engine
+ * Milestone 6 : Disruptor Ring Buffer Matching Engine
  */
-
-public class SingleWriterBenchmarkRunner {
-    public static void main() throws InterruptedException {
+public class DisruptorBenchmarkRunner {
+    static void main() throws InterruptedException {
         List<WorkloadProfile> workloadProfiles = List.of(
                 new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
-                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
-                new WorkloadProfile("MT_MIXED_WITH_STALE_CANCELS", 42, 1_000_000, 50, 25, 25, 15),
-                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15),
                 new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 50, 0, 0)
-        );
-
+            );
         int[] threads = {1,2,4,8};
         for(WorkloadProfile profile: workloadProfiles){
             System.out.printf("=== Profile: %s | Commands: %s | Seed: %s ===\n",profile.getName(), profile.getCommandCount(), profile.getSeed());
@@ -38,21 +36,22 @@ public class SingleWriterBenchmarkRunner {
         }
     }
 
-    private static void runMultithreaded(int threadCount, WorkloadProfile profile) throws InterruptedException {
+    private static void runMultithreaded(int threadCount, WorkloadProfile profile) throws InterruptedException{
         long commandCount = profile.getCommandCount();
         long commandsPerThread = commandCount/threadCount;
 
         EventListener eventRecorder = new EventRecorder(Constants.RETAIN_EVENTS);
         LatencyRecorder latencyRecorder = new LatencyRecorder(10000);
         LiveOrderTracker tracker = new LiveOrderTracker();
-        SingleWriterMatchingEngine singleWriterMatchingEngine = new SingleWriterMatchingEngine(eventRecorder,latencyRecorder,tracker, Constants.QUEUE_CAPACITY);
+        WaitStrategy waitStrategy = new YieldingWaitStrategy();
+        DisruptorMatchingEngine disruptorMatchingEngine = new DisruptorMatchingEngine(eventRecorder,latencyRecorder,tracker, Constants.QUEUE_CAPACITY, waitStrategy);
 
         CountDownLatch ready = new CountDownLatch(threadCount);
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch done = new CountDownLatch(threadCount);
 
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        singleWriterMatchingEngine.start();
+        disruptorMatchingEngine.start();
         for (int i = 0; i < threadCount; i++) {
             int threadId = i;
             executor.submit(() -> {
@@ -61,9 +60,9 @@ public class SingleWriterBenchmarkRunner {
                     ready.countDown();
                     start.await();
                     if(profile.getName().equals("MT_ADD_THEN_CANCEL")){
-                        runThreadForAddThenCancel(threadId, threadCount, singleWriterMatchingEngine, commandsPerThread,profile);
+                        runThreadForAddThenCancel(threadId, threadCount, disruptorMatchingEngine, commandsPerThread,profile);
                     }else {
-                        runThread(threadId, singleWriterMatchingEngine, commandsPerThread, profile);
+                        runThread(threadId, disruptorMatchingEngine, commandsPerThread, profile);
                     }
                 }
                 catch (InterruptedException e) {
@@ -82,9 +81,10 @@ public class SingleWriterBenchmarkRunner {
         start.countDown();
         //blocks threads until all done.countDown() is completed
         done.await();
-        singleWriterMatchingEngine.awaitQueueCompletion(10_000);
+        disruptorMatchingEngine.awaitQueueCompletion(10_000);
         long endNanos = System.nanoTime();
         executor.shutdown();
+        disruptorMatchingEngine.stop();
         double elapsedMillis = (endNanos-startNanos)/1_000_000.0;
         double throughput = 1_000_000/(elapsedMillis/1000);
         System.out.printf(
@@ -95,13 +95,13 @@ public class SingleWriterBenchmarkRunner {
         );
         System.out.println(eventRecorder.summary());
         System.out.println(latencyRecorder.latencySummary());
-        System.out.println(singleWriterMatchingEngine.getLiveOrderTracker().summary());
-        System.out.println("Submitted Commands: "+ singleWriterMatchingEngine.getSubmittedCommands());
-        System.out.println("Processed Commands: "+ singleWriterMatchingEngine.getProcessedCommands());
-        InvariantChecker.check(singleWriterMatchingEngine);
+        System.out.println(disruptorMatchingEngine.getLiveOrderTracker().summary());
+        System.out.println("Submitted Commands: "+ disruptorMatchingEngine.getSubmittedCommands());
+        System.out.println("Processed Commands: "+ disruptorMatchingEngine.getProcessedCommands());
+        InvariantChecker.check(disruptorMatchingEngine);
     }
 
-    private static void runThread(int threadId, SingleWriterMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
+    private static void runThread(int threadId, DisruptorMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
         Random random = new Random(42 + threadId);
         long orderId = (1 + threadId) * 1_000_000L;
         long sequence = threadId * 1_000_000L;
@@ -147,14 +147,12 @@ public class SingleWriterBenchmarkRunner {
                     // between the check above (if(!engine.....)) and this method call
                     orderIdToCancel = engine.getLiveOrderTracker().randomLiveOrderId(random);
                 }catch (IllegalStateException e){
-                   continue; // retry the iteration
+                    continue; // retry the iteration
                 }
                 CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(sequence++,orderIdToCancel);
                 command = cancelOrderCommand;
                 engine.submitCommand(command);
                 submittedCount++;
-
-    //                TODO: Should producer or consumer thread decide which order to remove?
 
             } else {
                 if(!engine.getLiveOrderTracker().hasLiveOrders()) continue; //guard modify against no-live-order scenario
@@ -179,13 +177,7 @@ public class SingleWriterBenchmarkRunner {
         }
     }
 
-
-//    ONLY FOR MT_ADD_THEN_CANCEL
-//    normal runThread() method will Add orders (eg. id = 123) to queue and cancel proportionately. However, the order might already be
-//    fulfilled by the time the consumer thread processes the cancel order (id = 123). This leads to ALOT of rejected orders in MT_MIXED_WITH_STALE_CANCELS.
-//    So, this custom runThread method will add 500_000 BUY orders (so nothing gets fulfilled), followed by 500_000 CANCEL orders, to measure cancel latency.
-
-    private static void runThreadForAddThenCancel(int threadId, int threadCount, SingleWriterMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
+    private static void runThreadForAddThenCancel(int threadId, int threadCount, DisruptorMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
         Random random = new Random(42 + threadId);
         long orderId = (1 + threadId) * 1_000_000L;
         long sequence = threadId * 1_000_000L;
@@ -219,7 +211,4 @@ public class SingleWriterBenchmarkRunner {
             }
         }
     }
-
-
-
 }
