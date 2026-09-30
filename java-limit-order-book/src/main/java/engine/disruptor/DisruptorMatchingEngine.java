@@ -14,6 +14,7 @@ import engine.SingleThreadedMatchingEngine;
 import event.EventListener;
 import utils.LiveOrderTracker;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
@@ -36,6 +37,9 @@ public class DisruptorMatchingEngine implements MatchingEngine {
     private final LiveOrderTracker liveOrderTracker;
 
     private final BackpressurePolicy backpressurePolicy;
+    private final ThreadLocal<Long> threadRetryCount = ThreadLocal.withInitial(()->0L);
+    private final ThreadLocal<Long> threadMaxRetries = ThreadLocal.withInitial(()->0L);
+    private final ConcurrentHashMap<Thread, RetryMetrics> perThreadMetrics = new ConcurrentHashMap<>();
 
     public DisruptorMatchingEngine(EventListener eventListener,
                                    LatencyRecorder latencyRecorder,
@@ -95,7 +99,11 @@ public class DisruptorMatchingEngine implements MatchingEngine {
             throw new IllegalStateException("Engine is not running!");
         }
             long createdAtNanos = command.timestamp();
+            long retriesForThisCommand = 0L;
             while (!tryPublish(command, createdAtNanos)) {
+                retriesForThisCommand++;
+                threadRetryCount.set(threadRetryCount.get() + 1); // Increment per-thread retry count
+                threadMaxRetries.set(Math.max(threadMaxRetries.get(), retriesForThisCommand));
 //                Backpressure options - decide what happens when ringbuffer is full
                 switch (this.backpressurePolicy){
                     case YIELD_RETRY -> Thread.yield(); //yield and retry
@@ -106,6 +114,23 @@ public class DisruptorMatchingEngine implements MatchingEngine {
             }
 
 //            submittedCommands.incrementAndGet(); //substituted with awaitProcessed()
+    }
+
+    public RetryMetrics getAndClearThreadMetrics(){
+        Long totalRetries = threadRetryCount.get();
+        Long maxRetries = threadMaxRetries.get();
+        RetryMetrics metrics = new RetryMetrics(totalRetries, maxRetries);
+        threadRetryCount.remove();
+        threadMaxRetries.remove();
+        return metrics;
+    }
+
+    public void recordThreadMetrics(Thread thread, RetryMetrics metrics) {
+        perThreadMetrics.put(thread, metrics);
+    }
+
+    public ConcurrentHashMap<Thread, RetryMetrics> getPerThreadMetrics() {
+        return perThreadMetrics;
     }
 
     private boolean tryPublish(Command command, long createdAtNanos){

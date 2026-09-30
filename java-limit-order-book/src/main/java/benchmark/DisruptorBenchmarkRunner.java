@@ -6,6 +6,7 @@ import core.Side;
 import engine.disruptor.BackpressurePolicy;
 import engine.disruptor.DisruptorConfig;
 import engine.disruptor.DisruptorMatchingEngine;
+import engine.disruptor.RetryMetrics;
 import engine.singlewriter.SingleWriterMatchingEngine;
 import event.EventListener;
 import utils.Constants;
@@ -15,10 +16,7 @@ import validation.InvariantChecker;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 
 /**
  * Milestone 6 : Disruptor Ring Buffer Matching Engine
@@ -28,10 +26,10 @@ public class DisruptorBenchmarkRunner {
 
     static void main() throws InterruptedException {
         List<WorkloadProfile> workloadProfiles = List.of(
-                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
-                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
-                new WorkloadProfile("MT_MIXED_WITH_STALE_CANCELS", 42, 1_000_000, 50, 25, 25, 15),
-                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15),
+//                new WorkloadProfile("MT_ADD_ONLY", 42, 1_000_000, 100, 0, 0, 0),
+//                new WorkloadProfile("MT_ADD_AND_MARKET", 42, 1_000_000, 100, 0, 0, 15),
+//                new WorkloadProfile("MT_MIXED_WITH_STALE_CANCELS", 42, 1_000_000, 50, 25, 25, 15),
+//                new WorkloadProfile("MT_THREAD_LOCAL_CHURN", 42, 1_000_000, 80, 10, 10, 15),
                 new WorkloadProfile("MT_ADD_THEN_CANCEL", 42, 1_000_000, 50, 50, 0, 0)
             );
         int[] threads = {1,2,4,8};
@@ -61,6 +59,7 @@ public class DisruptorBenchmarkRunner {
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch done = new CountDownLatch(threadCount);
 
+        ConcurrentHashMap<Integer, RetryMetrics> threadMetrics = new ConcurrentHashMap<>();
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         disruptorMatchingEngine.start();
         for (int i = 0; i < threadCount; i++) {
@@ -71,9 +70,9 @@ public class DisruptorBenchmarkRunner {
                     ready.countDown();
                     start.await();
                     if(profile.getName().equals("MT_ADD_THEN_CANCEL")){
-                        runThreadForAddThenCancel(threadId, threadCount, disruptorMatchingEngine, commandsPerThread,profile);
+                        runThreadForAddThenCancel(threadId, threadCount, disruptorMatchingEngine, commandsPerThread,profile, threadMetrics);
                     }else {
-                        runThread(threadId, disruptorMatchingEngine, commandsPerThread, profile);
+                        runThread(threadId, disruptorMatchingEngine, commandsPerThread, profile, threadMetrics);
                     }
                 }
                 catch (InterruptedException e) {
@@ -112,9 +111,10 @@ public class DisruptorBenchmarkRunner {
         System.out.println("Processed Commands: "+ disruptorMatchingEngine.getProcessedCommands());
         System.out.println("Publish Retries: "+ disruptorMatchingEngine.getPublishRetries());
         InvariantChecker.check(disruptorMatchingEngine);
+        printRetryMetrics(threadMetrics, threadCount);
     }
 
-    private static void runThread(int threadId, DisruptorMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
+    private static void runThread(int threadId, DisruptorMatchingEngine engine, long commandsPerThread, WorkloadProfile profile, ConcurrentHashMap<Integer, RetryMetrics> threadMetrics) {
         Random random = new Random(42 + threadId);
 //        Random random = ThreadLocalRandom.current();
         long orderId = (1 + threadId) * 1_000_000L;
@@ -189,9 +189,11 @@ public class DisruptorBenchmarkRunner {
             }
 
         }
+        RetryMetrics metrics = engine.getAndClearThreadMetrics();
+        threadMetrics.put(threadId, metrics);
     }
 
-    private static void runThreadForAddThenCancel(int threadId, int threadCount, DisruptorMatchingEngine engine, long commandsPerThread, WorkloadProfile profile) {
+    private static void runThreadForAddThenCancel(int threadId, int threadCount, DisruptorMatchingEngine engine, long commandsPerThread, WorkloadProfile profile, ConcurrentHashMap<Integer, RetryMetrics> threadMetrics) {
         Random random = new Random(42 + threadId);
         long orderId = (1 + threadId) * 1_000_000L;
         long sequence = threadId * 1_000_000L;
@@ -224,6 +226,8 @@ public class DisruptorBenchmarkRunner {
                 submittedCount++;
             }
         }
+        RetryMetrics metrics = engine.getAndClearThreadMetrics();
+        threadMetrics.put(threadId, metrics);
     }
 
     private static void showConfiguration(DisruptorConfig disruptorConfig){
@@ -231,5 +235,26 @@ public class DisruptorBenchmarkRunner {
         System.out.println("Queue Capacity: "+disruptorConfig.queueCapacity);
         System.out.println("Wait Strategy: "+disruptorConfig.waitStrategy.getClass().getName());
         System.out.println("Backpressure Policy: "+disruptorConfig.backPressurePolicy+"\n");
+    }
+
+    private static void printRetryMetrics(ConcurrentHashMap<Integer, RetryMetrics> threadMetrics, int threadCount){
+        if(threadMetrics.isEmpty()) return;
+
+        System.out.println("\n--- Per-Thread Retry Metrics ---");
+        long totalRetries = 0;
+        long maxRetriesAcrossAllThreads = 0;
+
+        for(int i = 0; i < threadCount; i++) {
+            RetryMetrics metrics = threadMetrics.get(i);
+            if(metrics != null) {
+                long threadRetries = metrics.totalRetries;
+                long threadMaxRetries = metrics.maxRetries;
+                System.out.printf("Thread %d: Total Retries: %d, Max Retries (single command): %d%n", i, threadRetries, threadMaxRetries);
+                totalRetries += threadRetries;
+                maxRetriesAcrossAllThreads = Math.max(maxRetriesAcrossAllThreads, threadMaxRetries);
+            }
+        }
+        System.out.printf("Aggregate: Total Retries: %d, Max Retries (any thread): %d%n", totalRetries, maxRetriesAcrossAllThreads);
+        System.out.println();
     }
 }
