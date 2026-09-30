@@ -217,8 +217,29 @@ The benchmark profiles used were:
 
 Results can be seen in docs/m5_singlewritermatchingengine.md
 
-Milestone 6:
-Ring buffer / low-latency engine
+## Milestone 6: Ring buffer / low-latency engine
+```text
+ARCHITECTURE
+
+Producer Thread 1
+Producer Thread 2
+Producer Thread 3
+Producer Thread 4
+        |
+        | publish commands
+        v
+Ring Buffer
+        |
+        v
+Single Engine Thread
+        |
+        | owns OrderBook exclusively
+        v
+SingleThreadedMatchingEngine
+        |
+        v
+Events
+```
 
 Milestone 7:
 Multi-symbol engine
