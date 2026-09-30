@@ -4,3 +4,4 @@ public interface Command {
     long sequence();
     long timestamp();
 }
+
