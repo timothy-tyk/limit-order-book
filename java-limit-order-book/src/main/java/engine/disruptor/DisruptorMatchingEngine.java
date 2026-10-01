@@ -39,7 +39,6 @@ public class DisruptorMatchingEngine implements MatchingEngine {
     private final BackpressurePolicy backpressurePolicy;
     private final ThreadLocal<Long> threadRetryCount = ThreadLocal.withInitial(()->0L);
     private final ThreadLocal<Long> threadMaxRetries = ThreadLocal.withInitial(()->0L);
-    private final ConcurrentHashMap<Thread, RetryMetrics> perThreadMetrics = new ConcurrentHashMap<>();
 
     public DisruptorMatchingEngine(EventListener eventListener,
                                    LatencyRecorder latencyRecorder,
@@ -104,6 +103,8 @@ public class DisruptorMatchingEngine implements MatchingEngine {
                 retriesForThisCommand++;
                 threadRetryCount.set(threadRetryCount.get() + 1); // Increment per-thread retry count
                 threadMaxRetries.set(Math.max(threadMaxRetries.get(), retriesForThisCommand));
+
+
 //                Backpressure options - decide what happens when ringbuffer is full
                 switch (this.backpressurePolicy){
                     case YIELD_RETRY -> Thread.yield(); //yield and retry
@@ -125,19 +126,7 @@ public class DisruptorMatchingEngine implements MatchingEngine {
         return metrics;
     }
 
-    public void recordThreadMetrics(Thread thread, RetryMetrics metrics) {
-        perThreadMetrics.put(thread, metrics);
-    }
-
-    public ConcurrentHashMap<Thread, RetryMetrics> getPerThreadMetrics() {
-        return perThreadMetrics;
-    }
-
     private boolean tryPublish(Command command, long createdAtNanos){
-//            return ringBuffer.tryPublishEvent((event, sequence) -> {
-//                event.command = command;
-//                event.createdAtNanos = createdAtNanos;
-//            });
         EventTranslatorOneArg<CommandEvent, Command> eventTranslator = (event, sequence, cmd) ->{
             event.command = cmd;
             event.createdAtNanos = createdAtNanos;
