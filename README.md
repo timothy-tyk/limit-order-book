@@ -246,6 +246,33 @@ SingleThreadedMatchingEngine
 Events
 ```
 
+Benchmark Environment:
+
+| Item                 |               Value                | 
+|:---------------------|:----------------------------------:| 
+| OS                   |          MacOS Tahoe 26.7          |
+| CPU                  |         Apple M5 Pro 48GB          |
+| JDK                  |             openjdk-26             |
+| Workload seed        |                 42                 |
+| Commands per profile |             1,000,000              |
+| Warmup runs          |                 3                  |
+| Engine mode          |Disruptor MPSC single-writer engine |
+| Ring Buffer capacity |               65,316               |
+|Wait Strategy| YieldingWaitStrategy|
+|Backpressure Policy|SPIN_RETRY|
+| Event mode           |   EventRecorder in counting mode   |
+|Latency Measurement| Command creation to processed completion|
+
+The benchmark profiles used were:
+
+- `MT_ADD_ONLY` = order acceptance, matching, trade generation, book buildup, queueing under load.
+- `MT_ADD_AND_MARKET` = limit order acceptance, market order acceptance, aggressive matching, liquidity consumption, trade generation.
+- `MT_MIXED_WITH_STALE_CANCELS` = realistic asynchronous command races, UNKNOWN_ORDER rejection behavior, mixed command processing, event consistency under nondeterministic producer interleaving.
+- `MT_ADD_THEN_CANCEL` = adds then cancels orders, to benchmark successful cancel path with minimal noise
+- `MT_THREAD_LOCAL_CHURN` = adds, cancels, modifies, market orders, some stale cancel/modify attempts.
+
+Results can be seen in docs/disruptormatchingengine.md
+
 Milestone 7:
 Multi-symbol engine
 
