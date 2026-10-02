@@ -218,6 +218,11 @@ The benchmark profiles used were:
 Results can be seen in docs/m5_singlewritermatchingengine.md
 
 ## Milestone 6: Ring buffer / low-latency engine
+Milestone 6 replaced the milestone 5 `ArrayBlockingQueue` transport with a Disruptor-style MPSC ring buffer.
+The core architectural rule remains the same:
+Only one thread owns the order book.
+All other threads publish commands into a ring buffer.
+The single engine thread consumes and processes commands sequentially.
 ```text
 ARCHITECTURE
 
